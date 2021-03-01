@@ -1,0 +1,22 @@
+name: Release with goreleaser
+on:
+  push:
+    tags:
+      - v*.*
+jobs:        
+  releases-matrix-linux:
+    name: Release Go Binary for linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux]
+        goarch: [386, amd64]
+    steps:
+    - uses: actions/checkout@v2
+    - uses: wangyoucao577/go-release-action@v1.14
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goos: ${{ matrix.goos }}
+        goarch: ${{ matrix.goarch }}
+        goversion: 1.16
+        ldflags: "-s -w"
