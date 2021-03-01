@@ -38,7 +38,6 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(port)
 		port := menu.Menu(port)
 		term := &terminal.Terminal{}
 		term.Options.Port = port
