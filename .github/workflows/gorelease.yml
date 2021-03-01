@@ -3,13 +3,13 @@ on:
   push:
     tags:
       - v*.*
-jobs:        
+jobs:
   releases-matrix-linux:
     name: Release Go Binary for linux
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: [linux]
+        goos: [linux, darwin]
         goarch: [386, amd64]
     steps:
     - uses: actions/checkout@v2
@@ -19,4 +19,5 @@ jobs:
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
         goversion: 1.16
+        project_path: "./src"
         ldflags: "-s -w"
