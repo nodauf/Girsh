@@ -10,11 +10,7 @@ import (
 	"github.com/op/go-logging"
 )
 
-var STTY_ROWS string
-var STTY_COLS string
-var STTY_SIZE string
-var SPAWN_TTY string
-
+// Terminal object
 type Terminal struct {
 	OS      string
 	Con     net.Conn
@@ -30,6 +26,7 @@ type Terminal struct {
 	log      *logging.Logger
 }
 
+// New will initialize the logging configuration and start the listener and wait for client.
 func (terminal *Terminal) New() {
 	terminal.logging()
 	listenAndAcceptConnection(terminal)
@@ -64,6 +61,7 @@ func (terminal *Terminal) logging() {
 
 }
 
+// GetOS send the command whoami and parse the result. The windows format is COMPUTERNAME\username
 func (terminal *Terminal) GetOS() {
 	//Use env ou set command and parse outptut
 	output := terminal.execute("whoami")
@@ -76,6 +74,7 @@ func (terminal *Terminal) GetOS() {
 
 }
 
+// Shell manage the stty raw, spawn the tty for linux and use the ConPTY for windows and connect the stdin and stdout with the con
 func (terminal *Terminal) Shell() {
 	defer func() {
 		if runtime.GOOS == "linux" {
@@ -103,13 +102,13 @@ func (terminal *Terminal) Shell() {
 		listenAndAcceptConnection(terminal)
 
 	}
-	chan_to_stdout := terminal.stream_copy(terminal.Con, os.Stdout, false)
-	chan_to_remote := terminal.stream_copy(os.Stdin, terminal.Con, true)
+	chanToStdout := terminal.streamCopy(terminal.Con, os.Stdout, false)
+	chanToRemote := terminal.streamCopy(os.Stdin, terminal.Con, true)
 	select {
-	case <-chan_to_stdout:
+	case <-chanToStdout:
 		terminal.log.Debug("Remote connection is closed")
 
-	case <-chan_to_remote:
+	case <-chanToRemote:
 		terminal.log.Debug("Local program is terminated")
 
 	}

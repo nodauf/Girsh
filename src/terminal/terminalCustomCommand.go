@@ -10,24 +10,9 @@ import (
 	utils "nc-shell/src/utils"
 )
 
-const fs_maxbufsize = 4096
+const fsMaxbufsize = 4096
 
-/*func parseCommand(terminal *Terminal, command string) {
-	command = strings.TrimSpace(command)
-	firstKeyWord := strings.Split(command, " ")[0]
-	commandSplit := strings.Split(command, " ")
-	switch firstKeyWord {
-	case "upload":
-		//fmt.Println("upload")
-		terminal.Upload(command)
-
-	case "download":
-		terminal.Download(commandSplit[1])
-		terminal.Con.Write(bytes.Repeat(backspace, len(command)))
-
-	}
-}*/
-
+// Upload a file on linux reverse shell with base64
 func (terminal *Terminal) Upload(cmd string) {
 	// Clean the command upload ....
 	terminal.cleanCmd(cmd)
@@ -49,7 +34,7 @@ func (terminal *Terminal) Upload(cmd string) {
 
 	filename := statinfo.Name()
 
-	buf := make([]byte, utils.Min(fs_maxbufsize, statinfo.Size()))
+	buf := make([]byte, utils.Min(fsMaxbufsize, statinfo.Size()))
 	n := 0
 	for err == nil {
 		n, err = f.Read(buf)
@@ -61,6 +46,7 @@ func (terminal *Terminal) Upload(cmd string) {
 
 }
 
+// Download future function to download a file
 func (terminal *Terminal) Download(cmd string) {
 
 	fmt.Print("\033[999D")

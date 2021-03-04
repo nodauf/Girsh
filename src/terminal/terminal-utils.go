@@ -18,10 +18,6 @@ import (
 	"golang.org/x/net/netutil"
 )
 
-var nullbyte = []byte{0}
-var backspace = []byte{8}
-var newline = []byte{10}
-
 func listenAndAcceptConnection(terminal *Terminal) {
 	var err error
 	localPort := ":" + strconv.Itoa(terminal.Options.Port)
@@ -98,7 +94,7 @@ func (terminal *Terminal) getTerminalSize() {
 }
 
 //Mettre dans utils network
-func (terminal *Terminal) send_string_to_stream(str string) []byte {
+func (terminal *Terminal) sendStringToStream(str string) []byte {
 	terminal.log.Debug("Send string : " + str + " to stream")
 	buf := []byte(str)
 	bufRead := make([]byte, 10240)
@@ -121,8 +117,8 @@ func (terminal *Terminal) send_string_to_stream(str string) []byte {
 }
 
 // Performs copy operation between streams: os and tcp streams
-func (terminal *Terminal) stream_copy(src io.Reader, dst io.Writer, to_remote bool) <-chan int {
-	sync_channel := make(chan int)
+func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool) <-chan int {
+	syncChannel := make(chan int)
 	var command string
 	go func() {
 		defer func() {
@@ -130,7 +126,7 @@ func (terminal *Terminal) stream_copy(src io.Reader, dst io.Writer, to_remote bo
 				con.Close()
 				terminal.log.Debugf("Connection from %v is closed\n", con.RemoteAddr())
 			}
-			sync_channel <- 0 // Notify that processing is finished
+			syncChannel <- 0 // Notify that processing is finished
 		}()
 		for {
 			var nBytes int
@@ -145,9 +141,9 @@ func (terminal *Terminal) stream_copy(src io.Reader, dst io.Writer, to_remote bo
 				break
 			}
 			//if writing stdin -> target
-			if to_remote {
+			if toRemote {
 				// Remove null byte and line feed (\x10) which was send sometimes between each character
-				command += string(bytes.Trim(bytes.Trim(buf, string(nullbyte)), string(newline)))
+				command += string(bytes.Trim(bytes.Trim(buf, string(utils.Nullbyte)), string(utils.Newline)))
 				//Contains new line
 				if utils.SliceByteContains(buf, byte(13)) {
 					terminal.mutex.Lock()
@@ -168,7 +164,7 @@ func (terminal *Terminal) stream_copy(src io.Reader, dst io.Writer, to_remote bo
 						terminal.Download(commandSplit[1])
 						//skip the command
 						nBytes = 0
-						dst.Write(bytes.Repeat(backspace, len(command)))
+						dst.Write(bytes.Repeat(utils.Backspace, len(command)))
 
 					case "EXIT":
 						terminal.log.Debug("Custom command EXIT")
@@ -182,7 +178,7 @@ func (terminal *Terminal) stream_copy(src io.Reader, dst io.Writer, to_remote bo
 			}
 
 			// If write target -> stdout
-			if !to_remote {
+			if !toRemote {
 				// Using mutex to avoid writing stdout of the target while we are typing
 				terminal.mutex.Lock()
 				_, err = dst.Write(buf[0:nBytes])
@@ -198,7 +194,7 @@ func (terminal *Terminal) stream_copy(src io.Reader, dst io.Writer, to_remote bo
 		}
 
 	}()
-	return sync_channel
+	return syncChannel
 }
 
 func (terminal *Terminal) execute(cmd string) []byte {

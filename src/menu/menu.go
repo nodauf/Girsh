@@ -182,6 +182,7 @@ func cliRevshellMenu(ip string, port int, shell string) {
 
 }
 
+// Menu to choose the interface and the kind of shell. Oneliners will be print
 func Menu(port int) int {
 	ip := interfaceMenu()
 	shell := revshellMenu()
