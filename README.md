@@ -1,3 +1,4 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/nodauf/Girsh)](https://goreportcard.com/report/github.com/nodauf/Girsh)
 # Girsh (Golang Interactive Reverse SHell)
 
 Who didn't get bored of manually typing the few lines to upgrade a reverse shell to a full interactive reverse shell (tty spawn, stty size ..., stty raw -echo) or typing the command to use [ConPTY](https://github.com/antonioCoco/ConPtyShell).
