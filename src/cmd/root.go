@@ -12,6 +12,7 @@ import (
 var cfgFile string
 var port int
 var debug bool
+var disableConPTY bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -27,7 +28,7 @@ var rootCmd = &cobra.Command{
 		term := &terminal.Terminal{}
 		term.Options.Port = port
 		term.Options.Debug = debug
-
+		term.Options.DisableConPTY = disableConPTY
 		term.New()
 		term.GetOS()
 		term.Shell()
@@ -47,7 +48,7 @@ func Execute() {
 func init() {
 
 	rootCmd.PersistentFlags().IntVarP(&port, "port", "p", 1234, "port to listen (default is 1234)")
-
+	rootCmd.PersistentFlags().BoolVarP(&disableConPTY, "disable-conpty", "c", false, "Disable the shell with ConPTY (for windows only)")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "Debug output")
 
 }

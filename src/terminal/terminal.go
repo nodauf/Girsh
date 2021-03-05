@@ -15,8 +15,9 @@ type Terminal struct {
 	OS      string
 	Con     net.Conn
 	Options struct {
-		Port  int
-		Debug bool
+		Port          int
+		Debug         bool
+		DisableConPTY bool
 	}
 	rows     string
 	cols     string
@@ -91,15 +92,18 @@ func (terminal *Terminal) Shell() {
 		terminal.interactiveReverseShellLinux()
 
 	} else if terminal.OS == "windows" {
-		// If the main binary is running on linux
-		if runtime.GOOS == "linux" {
-			// Set the terminal to raw mode
-			terminal.sttyRawEcho("enable")
+
+		if !terminal.Options.DisableConPTY {
+			// If the main binary is running on linux
+			if runtime.GOOS == "linux" {
+				// Set the terminal to raw mode
+				terminal.sttyRawEcho("enable")
+			}
+			terminal.interactiveReverseShellWindows()
+			terminal.log.Debug("Starting http server on " + terminal.Con.LocalAddr().String())
+			terminal.serveHTTPRevShellPowershell()
+			listenAndAcceptConnection(terminal)
 		}
-		terminal.interactiveReverseShellWindows()
-		terminal.log.Debug("Starting http server on " + terminal.Con.LocalAddr().String())
-		terminal.serveHTTPRevShellPowershell()
-		listenAndAcceptConnection(terminal)
 
 	}
 	chanToStdout := terminal.streamCopy(terminal.Con, os.Stdout, false)

@@ -18,6 +18,7 @@ var listenCmd = &cobra.Command{
 		term := &terminal.Terminal{}
 		term.Options.Port = port
 		term.Options.Debug = debug
+		term.Options.DisableConPTY = disableConPTY
 		term.New()
 		term.GetOS()
 		term.Shell()
