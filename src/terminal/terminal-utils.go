@@ -27,6 +27,7 @@ func listenAndAcceptConnection(terminal *Terminal) {
 	}
 	terminal.log.Notice("Listening on", localPort)
 	terminal.accept()
+	terminal.listener.Close()
 
 }
 func (terminal *Terminal) accept() {
@@ -257,5 +258,4 @@ func (terminal *Terminal) interactiveReverseShellWindows() {
 	terminal.log.Debug("Send the command: " + command)
 	terminal.execute(command)
 	terminal.Con.Close()
-	terminal.listener.Close()
 }
