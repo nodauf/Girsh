@@ -229,6 +229,7 @@ func (terminal *Terminal) cleanCmd(cmd string) {
 
 func (terminal *Terminal) sttyRawEcho(state string) {
 	if state == "enable" {
+		// Terminal in raw mode
 		terminal.log.Debug("Execute stty raw -echo")
 		rawMode := exec.Command("/bin/stty", "raw", "-echo")
 		rawMode.Stdin = os.Stdin
@@ -236,9 +237,9 @@ func (terminal *Terminal) sttyRawEcho(state string) {
 		rawMode.Wait()
 
 	} else if state == "disable" {
-
+		// Terminal in cooked mode
 		terminal.log.Debug("Execute stty raw")
-		rawModeOff := exec.Command("/bin/stty", "-raw")
+		rawModeOff := exec.Command("/bin/stty", "-raw", "echo")
 		rawModeOff.Stdin = os.Stdin
 		_ = rawModeOff.Run()
 		rawModeOff.Wait()
