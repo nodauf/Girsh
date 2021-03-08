@@ -3,7 +3,8 @@ package cmd
 import (
 	"fmt"
 	"nc-shell/src/menu"
-	terminal "nc-shell/src/terminal"
+	"nc-shell/src/prompt"
+	"nc-shell/src/sessions"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -24,15 +25,13 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		port := menu.Menu(port)
-		term := &terminal.Terminal{}
-		term.Options.Port = port
-		term.Options.Debug = debug
-		term.Options.DisableConPTY = disableConPTY
-		term.New()
-		term.GetOS()
-		term.Shell()
-
+		port = menu.Menu(port)
+		sessions.OptionsSession.Debug = debug
+		sessions.OptionsSession.Port = port
+		sessions.OptionsSession.DisableConPTY = disableConPTY
+		// Init the logger of the application
+		sessions.Logger()
+		prompt.Prompt()
 	},
 }
 

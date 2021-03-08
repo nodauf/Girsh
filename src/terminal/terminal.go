@@ -23,17 +23,17 @@ type Terminal struct {
 	cols     string
 	spawnTTY string
 	mutex    sync.Mutex
-	listener net.Listener
-	log      *logging.Logger
+	Listener net.Listener
+	Log      *logging.Logger
 }
 
 // New will initialize the logging configuration and start the listener and wait for client.
-func (terminal *Terminal) New() {
-	terminal.logging()
-	listenAndAcceptConnection(terminal)
+func (terminal *Terminal) New() error {
+	//terminal.logging()
+	return listenAndAcceptConnection(terminal)
 }
 
-func (terminal *Terminal) logging() {
+/*func (terminal *Terminal) logging() {
 	terminal.log = logging.MustGetLogger("nc-shell")
 
 	logger := logging.NewLogBackend(os.Stderr, "", 0)
@@ -60,7 +60,7 @@ func (terminal *Terminal) logging() {
 	// Set the backends to be used.
 	logging.SetBackend(loggerLeveled)
 
-}
+}*/
 
 // GetOS send the command whoami and parse the result. The windows format is COMPUTERNAME\username
 func (terminal *Terminal) GetOS() {
@@ -75,18 +75,12 @@ func (terminal *Terminal) GetOS() {
 
 }
 
-// Shell manage the stty raw, spawn the tty for linux and use the ConPTY for windows and connect the stdin and stdout with the con
-func (terminal *Terminal) Shell() {
-	defer func() {
-		if runtime.GOOS == "linux" {
-			terminal.sttyRawEcho("disable")
-		}
-	}()
+// PrepareShell manage the stty raw, spawn the tty for linux and use the ConPTY for windows
+func (terminal *Terminal) PrepareShell() {
+
 	if terminal.OS == "linux" {
 		// If the main binary is running on linux
 		if runtime.GOOS == "linux" {
-			// Set the terminal to raw mode
-			terminal.sttyRawEcho("enable")
 			terminal.setSpawnTTY()
 		}
 		terminal.interactiveReverseShellLinux()
@@ -94,27 +88,43 @@ func (terminal *Terminal) Shell() {
 	} else if terminal.OS == "windows" {
 
 		if !terminal.Options.DisableConPTY {
-			// If the main binary is running on linux
-			if runtime.GOOS == "linux" {
-				// Set the terminal to raw mode
-				terminal.sttyRawEcho("enable")
-			}
 			terminal.interactiveReverseShellWindows()
-			terminal.log.Debug("Starting http server on " + terminal.Con.LocalAddr().String())
+			terminal.Log.Debug("Starting http server on " + terminal.Con.LocalAddr().String())
 			terminal.serveHTTPRevShellPowershell()
 			listenAndAcceptConnection(terminal)
 		}
 
 	}
+	//terminal.Connect()
+}
+
+// Connect to a remote stdin and stdout to a net.Conn
+func (terminal *Terminal) Connect() int {
+	defer func() {
+		if runtime.GOOS == "linux" {
+			terminal.sttyRawEcho("disable")
+		}
+	}()
+	// If the main binary is running on linux
+	if runtime.GOOS == "linux" {
+		// Set the terminal to raw mode
+		terminal.sttyRawEcho("enable")
+	}
 	chanToStdout := terminal.streamCopy(terminal.Con, os.Stdout, false)
 	chanToRemote := terminal.streamCopy(os.Stdin, terminal.Con, true)
+
 	select {
-	case <-chanToStdout:
-		terminal.log.Debug("Remote connection is closed")
+	case status := <-chanToStdout:
+		if status == 0 {
+			terminal.Log.Debug("Remote connection is closed")
+		} else if status == 1 {
+			terminal.Log.Debug("Remote connection is backgrounded")
+		}
+		return status
 
-	case <-chanToRemote:
-		terminal.log.Debug("Local program is terminated")
-
+	case status := <-chanToRemote:
+		terminal.Log.Debug("Local program is terminated")
+		return status
 	}
 
 }

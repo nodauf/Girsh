@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	terminal "nc-shell/src/terminal"
+	"nc-shell/src/prompt"
+	"nc-shell/src/sessions"
 
 	"github.com/spf13/cobra"
 )
@@ -14,14 +15,12 @@ var listenCmd = &cobra.Command{
 	or use ConPTY if it's windows`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		//network.ListenAndAcceptConnection(port)
-		term := &terminal.Terminal{}
-		term.Options.Port = port
-		term.Options.Debug = debug
-		term.Options.DisableConPTY = disableConPTY
-		term.New()
-		term.GetOS()
-		term.Shell()
+		sessions.OptionsSession.Debug = debug
+		sessions.OptionsSession.Port = port
+		sessions.OptionsSession.DisableConPTY = disableConPTY
+		// Init the logger of the application
+		sessions.Logger()
+		prompt.Prompt()
 
 	},
 }
