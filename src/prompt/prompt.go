@@ -73,6 +73,8 @@ func executor(in string) {
 
 // Prompt run the custom prompt to manage sessions
 func Prompt() {
+	sessions.Logger()
+	sessions.Start()
 	p := prompt.New(
 		executor,
 		complete,

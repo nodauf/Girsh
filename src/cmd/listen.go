@@ -19,7 +19,6 @@ var listenCmd = &cobra.Command{
 		sessions.OptionsSession.Port = port
 		sessions.OptionsSession.DisableConPTY = disableConPTY
 		// Init the logger of the application
-		sessions.Logger()
 		prompt.Prompt()
 
 	},
