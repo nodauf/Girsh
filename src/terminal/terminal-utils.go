@@ -26,7 +26,6 @@ func listenAndAcceptConnection(terminal *Terminal) error {
 		terminal.Log.Error(err)
 		return err
 	}
-	terminal.Log.Notice("Listening on", localPort)
 	return terminal.accept()
 
 }

@@ -31,6 +31,10 @@ func newTerminals() {
 		if err != nil {
 			break
 		}
+
+		localPort := ":" + strconv.Itoa(term.Options.Port)
+		term.Log.Notice("Listening on", localPort)
+
 		term.GetOS()
 		term.PrepareShell()
 		sessionID := lastSessionID + 1
