@@ -28,12 +28,10 @@ func newTerminals() {
 		term.Options.DisableConPTY = OptionsSession.DisableConPTY
 		term.Log = log
 		err := term.New()
+		// Exit the function if there is an error
 		if err != nil {
 			break
 		}
-
-		localPort := ":" + strconv.Itoa(term.Options.Port)
-		term.Log.Notice("Listening on", localPort)
 
 		term.GetOS()
 		term.PrepareShell()

@@ -41,6 +41,8 @@ func Connect(idString string) {
 // Start the listener
 func Start() {
 	go newTerminals()
+	localPort := ":" + strconv.Itoa(OptionsSession.Port)
+	log.Notice("Listening on", localPort)
 }
 
 // Stop the listener
