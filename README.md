@@ -58,5 +58,5 @@ Flags:
 ## Demo
 
 ### Linux
-
+![Gif for linux victim](./images/girsh-linux.gif)
 ### Windows
