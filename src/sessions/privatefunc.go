@@ -30,6 +30,8 @@ func newTerminals() {
 		err := term.New()
 		// Exit the function if there is an error
 		if err != nil {
+			// Destroy term
+			term = &terminal.Terminal{}
 			break
 		}
 
