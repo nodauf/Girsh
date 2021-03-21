@@ -4,10 +4,19 @@ import (
 	"fmt"
 	"nc-shell/src/sessions"
 	"os"
+	"os/exec"
 	"strings"
 
 	prompt "github.com/c-bata/go-prompt"
 )
+
+func handleExit() {
+	// workaround for the bug https://github.com/c-bata/go-prompt/issues/147
+	rawModeOff := exec.Command("/bin/stty", "-raw", "echo")
+	rawModeOff.Stdin = os.Stdin
+	_ = rawModeOff.Run()
+	rawModeOff.Wait()
+}
 
 func executor(in string) {
 	command := strings.Split(in, " ")
@@ -73,6 +82,7 @@ func executor(in string) {
 
 // Prompt run the custom prompt to manage sessions
 func Prompt() {
+	defer handleExit()
 	sessions.Logger()
 	sessions.Start()
 	p := prompt.New(
