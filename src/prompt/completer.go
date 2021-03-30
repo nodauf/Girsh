@@ -9,6 +9,7 @@ import (
 var commands = []prompt.Suggest{
 	{Text: "sessions", Description: "Print actives sessions"},
 	{Text: "connect", Description: "Connect to an active session"},
+	{Text: "menu", Description: "Start the reverse shell menu"},
 	{Text: "options", Description: "Manage current options (default print them)"},
 	{Text: "start", Description: "Start the listener"},
 	{Text: "stop", Description: "Stop the listener"},

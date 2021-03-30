@@ -15,6 +15,7 @@ func helpConnect() {
 func help() {
 	fmt.Println("sessions: Manage route to socks servers")
 	fmt.Println("connect: Manage route to socks servers")
+	fmt.Println("menu: Start the reverse shell menu")
 	fmt.Println("options: Manage current options (default print them)")
 	fmt.Println("start: Start the listener")
 	fmt.Println("stop: Stop the listener")

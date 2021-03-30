@@ -2,6 +2,7 @@ package prompt
 
 import (
 	"fmt"
+	"nc-shell/src/menu"
 	"nc-shell/src/sessions"
 	"os"
 	"os/exec"
@@ -35,6 +36,8 @@ func executor(in string) {
 		} else {
 			help()
 		}
+	case "menu":
+		menu.Menu(sessions.OptionsSession.Port)
 	case "sessions":
 		sessions.PrintSessions()
 	case "connect":
