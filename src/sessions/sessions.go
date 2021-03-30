@@ -3,6 +3,7 @@ package sessions
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 
 	logging "github.com/op/go-logging"
@@ -20,7 +21,14 @@ var OptionsSession Options
 
 // PrintSessions will list all active sessions
 func PrintSessions() {
-	for id, terminal := range sessions {
+	// Tricks to print the map ordered by ID
+	keys := make([]int, 0, len(sessions))
+	for k := range sessions {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, id := range keys {
+		terminal := sessions[id]
 		fmt.Println(strconv.Itoa(id) + " => " + terminal.OS + " " + terminal.Con.RemoteAddr().String())
 	}
 }
