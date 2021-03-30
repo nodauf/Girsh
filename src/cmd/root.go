@@ -25,7 +25,7 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		port = menu.Menu(port)
+		menu.Menu(port)
 		sessions.OptionsSession.Debug = debug
 		sessions.OptionsSession.Port = port
 		sessions.OptionsSession.DisableConPTY = disableConPTY
