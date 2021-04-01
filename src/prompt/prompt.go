@@ -29,9 +29,10 @@ func executor(in string) {
 			switch strings.ToLower(second) {
 			case "sessions":
 				helpSessions()
-
 			case "connect":
 				helpConnect()
+			case "options":
+				helpOptions()
 			}
 		} else {
 			help()
@@ -64,12 +65,30 @@ func executor(in string) {
 				} else {
 					sessions.PrintPortOptions()
 				}
-			case "disableconpty":
+			case "conpty":
 				if len(command) > 2 {
-					sessions.SetDisableConPTY(command[2])
-				} else {
-					sessions.PrintDisableConPTYOptions()
+					third := command[2]
+					switch strings.ToLower(third) {
+					case "disableconpty":
+						if len(command) > 3 {
+							sessions.SetDisableConPTY(command[3])
+						} else {
+							sessions.PrintDisableConPTYOptions()
+						}
+					case "onlywebserver":
+						if len(command) > 3 {
+							sessions.SetOnlyWebserver(command[3])
+						} else {
+							sessions.PrintOnlyWebserverOptions()
+						}
+					default:
+						fmt.Println("Invalid conpty command")
+
+					}
 				}
+			default:
+				fmt.Println("Invalid options command")
+
 			}
 		} else {
 			sessions.PrintOptions()

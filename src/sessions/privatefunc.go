@@ -23,20 +23,27 @@ func sessionIDExists(idString string) (bool, int) {
 func newTerminals() {
 	for {
 		term = &terminal.Terminal{}
-		term.Options.Port = OptionsSession.Port
-		term.Options.Debug = OptionsSession.Debug
-		term.Options.DisableConPTY = OptionsSession.DisableConPTY
+		term.Options = OptionsSession
 		term.Log = log
-		err := term.New()
+		if !term.Options.OnlyWebserver {
+			err := term.New()
+			// Exit the function if there is an error
+			if err != nil {
+				// Destroy term
+				term = &terminal.Terminal{}
+				break
+			}
+			term.GetOS()
+		} else {
+			term.Log.Debug("Skipping first stage as the option OnlyWebserver is set to true")
+		}
+		err := term.PrepareShell()
 		// Exit the function if there is an error
 		if err != nil {
 			// Destroy term
 			term = &terminal.Terminal{}
 			break
 		}
-
-		term.GetOS()
-		term.PrepareShell()
 		sessionID := lastSessionID + 1
 		sessions[sessionID] = term
 		lastSessionID = sessionID

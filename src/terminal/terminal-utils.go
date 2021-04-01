@@ -51,33 +51,49 @@ func (terminal *Terminal) accept() error {
 
 }
 
-func (terminal *Terminal) serveHTTPRevShellPowershell() {
-
-	listener, _ := net.Listen("tcp", terminal.Con.LocalAddr().String())
+func (terminal *Terminal) serveHTTPRevShellPowershell() error {
+	var localAddr string
+	var err error
+	// If the option OnlyWebserver is set terminal.Con will be nil
+	if terminal.Con != nil {
+		localAddr = terminal.Con.LocalAddr().String()
+	} else {
+		localAddr = ":" + strconv.Itoa(terminal.Options.Port)
+	}
+	terminal.Listener, err = net.Listen("tcp", localAddr)
+	if err != nil {
+		terminal.Log.Fatal("Error listening on " + localAddr)
+	}
 	var svc = http.Server{
 		Handler: http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			templateBox, err := rice.FindBox("../static/")
 			if err != nil {
-				log.Fatal(err)
+				terminal.Log.Fatal(err)
 			}
 			// get file contents as string
-			file, _ := templateBox.Open("Invoke-ConPtyShell.ps1")
+			file, err := templateBox.Open("Invoke-ConPtyShell.ps1")
 			if err != nil {
-				log.Fatal(err)
-			}
-			if err != nil {
-				log.Fatal(err)
+				terminal.Log.Fatal(err)
 			}
 			//rice.MustFindBox("./static/Invoke-ConPtyShell.ps1").HTTPBox()
 			http.ServeContent(rw, r, "Invoke-ConPtyShell.ps1", time.Now(), file)
 			terminal.Log.Debug("Invoke-ConPtyShell.ps1 have been served")
 			//http.ServeFile(rw, r, ./static/Invoke-ConPtyShell.ps1)
-			listener.Close()
+			terminal.Listener.Close()
 
 		}),
 	}
-	listener = netutil.LimitListener(listener, int(1))
-	svc.Serve(listener)
+	terminal.Listener = netutil.LimitListener(terminal.Listener, int(1))
+	err = svc.Serve(terminal.Listener)
+	if err != nil {
+		if strings.Contains(err.Error(), "use of closed network connection") {
+			localPort := ":" + strconv.Itoa(terminal.Options.Port)
+			terminal.Log.Notice("The listener " + localPort + " has been stopped")
+		} else {
+			terminal.Log.Error("Error when serving HTTP connection " + err.Error())
+		}
+	}
+	return err
 
 }
 

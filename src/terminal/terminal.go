@@ -12,19 +12,23 @@ import (
 
 // Terminal object
 type Terminal struct {
-	OS      string
-	Con     net.Conn
-	Options struct {
-		Port          int
-		Debug         bool
-		DisableConPTY bool
-	}
+	OS       string
+	Con      net.Conn
+	Options  Options
 	rows     string
 	cols     string
 	spawnTTY string
 	mutex    sync.Mutex
 	Listener net.Listener
 	Log      *logging.Logger
+}
+
+// Options type to manage the terminal's options, also use by the session
+type Options struct {
+	Port          int
+	Debug         bool
+	DisableConPTY bool
+	OnlyWebserver bool
 }
 
 // New will initialize the logging configuration and start the listener and wait for client.
@@ -76,7 +80,7 @@ func (terminal *Terminal) GetOS() {
 }
 
 // PrepareShell manage the stty raw, spawn the tty for linux and use the ConPTY for windows
-func (terminal *Terminal) PrepareShell() {
+func (terminal *Terminal) PrepareShell() error {
 
 	if terminal.OS == "linux" {
 		// If the main binary is running on linux
@@ -90,11 +94,30 @@ func (terminal *Terminal) PrepareShell() {
 		if !terminal.Options.DisableConPTY {
 			terminal.interactiveReverseShellWindows()
 			terminal.Log.Debug("Starting http server on " + terminal.Con.LocalAddr().String())
-			terminal.serveHTTPRevShellPowershell()
-			listenAndAcceptConnection(terminal)
+			err := terminal.serveHTTPRevShellPowershell()
+			if err != nil {
+				return err
+			}
+
+			if err := listenAndAcceptConnection(terminal); err != nil {
+				terminal.Log.Error("Error while listening or accepting a connection " + err.Error())
+				return err
+			}
 		}
 
+	} else if terminal.Options.OnlyWebserver {
+		terminal.Log.Debug("Starting http server on 0.0.0.0")
+		err := terminal.serveHTTPRevShellPowershell()
+		if err != nil {
+			return err
+		}
+
+		if err = listenAndAcceptConnection(terminal); err != nil {
+			terminal.Log.Error("Error while listening or accepting a connection " + err.Error())
+			return err
+		}
 	}
+	return nil
 	//terminal.Connect()
 }
 

