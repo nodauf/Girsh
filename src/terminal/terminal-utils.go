@@ -26,6 +26,7 @@ func listenAndAcceptConnection(terminal *Terminal) error {
 		terminal.Log.Error(err)
 		return err
 	}
+	terminal.Log.Debug("Listening on " + localPort + " and waiting for connection")
 	return terminal.accept()
 
 }
@@ -54,6 +55,7 @@ func (terminal *Terminal) accept() error {
 func (terminal *Terminal) serveHTTPRevShellPowershell() error {
 	var localAddr string
 	var err error
+	scriptServed := false
 	// If the option OnlyWebserver is set terminal.Con will be nil
 	if terminal.Con != nil {
 		localAddr = terminal.Con.LocalAddr().String()
@@ -64,6 +66,7 @@ func (terminal *Terminal) serveHTTPRevShellPowershell() error {
 	if err != nil {
 		terminal.Log.Fatal("Error listening on " + localAddr)
 	}
+	defer terminal.Listener.Close()
 	var svc = http.Server{
 		Handler: http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			templateBox, err := rice.FindBox("../static/")
@@ -79,19 +82,25 @@ func (terminal *Terminal) serveHTTPRevShellPowershell() error {
 			http.ServeContent(rw, r, "Invoke-ConPtyShell.ps1", time.Now(), file)
 			terminal.Log.Debug("Invoke-ConPtyShell.ps1 have been served")
 			//http.ServeFile(rw, r, ./static/Invoke-ConPtyShell.ps1)
+
+			scriptServed = true
 			terminal.Listener.Close()
 
 		}),
 	}
 	terminal.Listener = netutil.LimitListener(terminal.Listener, int(1))
 	err = svc.Serve(terminal.Listener)
-	if err != nil {
+	// If there is an error and the script haven't been served
+	if err != nil && !scriptServed {
 		if strings.Contains(err.Error(), "use of closed network connection") {
 			localPort := ":" + strconv.Itoa(terminal.Options.Port)
 			terminal.Log.Notice("The listener " + localPort + " has been stopped")
 		} else {
 			terminal.Log.Error("Error when serving HTTP connection " + err.Error())
 		}
+	} else {
+		//Ignore the error as the script as been delivered
+		err = nil
 	}
 	return err
 
