@@ -128,7 +128,7 @@ func PrintDisableConPTYOptions() {
 	fmt.Println("DisableConPTY => " + strconv.FormatBool(OptionsSession.DisableConPTY))
 }
 
-// PrintDisableConPTYOptions print the value of DisableConPTY options
+// PrintOnlyWebserverOptions print the value of OnlyWebserver options
 func PrintOnlyWebserverOptions() {
 	fmt.Println("OnlyWebserver => " + strconv.FormatBool(OptionsSession.OnlyWebserver))
 }
