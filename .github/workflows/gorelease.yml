@@ -20,4 +20,5 @@ jobs:
         goarch: ${{ matrix.goarch }}
         goversion: 1.16
         project_path: "./src"
+        build_flags: "-buildmode=pie"
         ldflags: "-s -w"
