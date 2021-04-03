@@ -4,12 +4,42 @@ on:
     tags:
       - v*.*
 jobs:
-  releases-matrix-linux:
-    name: Release Go Binary for linux
+        
+  release-linux-amd64:
+    name: Release Go Binary for linux amd64
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: wangyoucao577/go-release-action@v1.16
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goos: linux
+        goarch: amd64
+        goversion: 1.16
+        project_path: "./src"
+        build_flags: "-buildmode=pie"
+        ldflags: "-s -w"
+        
+  release-linux-386:
+    name: Release Go Binary for linux 386
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: wangyoucao577/go-release-action@v1.16
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goos: linux
+        goarch: 386
+        goversion: 1.16
+        project_path: "./src"
+        ldflags: "-s -w"
+        
+  releases-matrix-darwin:
+    name: Release Go Binary for Darwin
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: [linux, darwin]
+        goos: [darwin]
         goarch: [386, amd64]
     steps:
     - uses: actions/checkout@v2
@@ -20,5 +50,4 @@ jobs:
         goarch: ${{ matrix.goarch }}
         goversion: 1.16
         project_path: "./src"
-        build_flags: "-buildmode=pie"
         ldflags: "-s -w"
