@@ -83,6 +83,7 @@ func SetPort(portString string) {
 	if port, err := strconv.Atoi(portString); err == nil {
 		OptionsSession.Port = port
 		PrintPortOptions()
+		Restart()
 	} else {
 		log.Error("Port option " + portString + " invalid")
 	}
@@ -93,6 +94,7 @@ func SetDisableConPTY(disableConPTYString string) {
 	if disableConPTY, err := strconv.ParseBool(disableConPTYString); err == nil {
 		OptionsSession.DisableConPTY = disableConPTY
 		PrintDisableConPTYOptions()
+		Restart()
 	} else {
 		log.Error("DisableConPTY option " + disableConPTYString + " invalid")
 	}
