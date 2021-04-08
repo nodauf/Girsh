@@ -129,29 +129,6 @@ func (terminal *Terminal) getTerminalSize() {
 
 }
 
-//Mettre dans utils network
-func (terminal *Terminal) sendStringToStream(str string) []byte {
-	terminal.Log.Debug("Send string : " + str + " to stream")
-	buf := []byte(str)
-	bufRead := make([]byte, 10240)
-	_, err := terminal.Con.Write(buf)
-
-	if err != nil {
-		terminal.Log.Fatal("Write error: %s\n", err)
-	}
-	// Wait to catch the noisy output
-	time.Sleep(500 * time.Millisecond)
-	// Force to stop to read. Useful for windows reverse connection with ConPTY
-	terminal.Con.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
-	terminal.Con.Read(bufRead)
-	fmt.Println(string(bufRead))
-	// Send new line to show the prompt
-	terminal.Con.Write([]byte("\n"))
-	// Disable timeout for further read
-	terminal.Con.SetReadDeadline(time.Time{})
-	return bufRead
-}
-
 // Performs copy operation between streams: os and tcp streams
 func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool) <-chan int {
 	syncChannel := make(chan int)
