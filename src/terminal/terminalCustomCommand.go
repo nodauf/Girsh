@@ -41,7 +41,7 @@ func (terminal *Terminal) Upload(cmd string) {
 		encodedStr := base64.StdEncoding.EncodeToString(buf[0:n])
 		cmd := "echo " + encodedStr + "|base64 -d>> " + filename
 		printTerm(string(buf))
-		terminal.execute(cmd)
+		terminal.execute(cmd, []byte{0})
 	}
 
 }

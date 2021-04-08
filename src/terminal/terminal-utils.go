@@ -18,6 +18,13 @@ import (
 	"golang.org/x/net/netutil"
 )
 
+// End of prompt Linux
+var promptLinux1 = []byte("$")[0]
+var promptLinux2 = []byte("#")[0]
+
+// End of prompt Windows
+var promptWindows1 = []byte(">")[0]
+
 func listenAndAcceptConnection(terminal *Terminal) error {
 	var err error
 	localPort := ":" + strconv.Itoa(terminal.Options.Port)
@@ -225,8 +232,8 @@ func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool
 	return syncChannel
 }
 
-func (terminal *Terminal) execute(cmd string) []byte {
-
+func (terminal *Terminal) execute(cmd string, byteUntilRead []byte) []byte {
+	terminal.clearBufferReadTerminal()
 	terminal.Log.Debug("Execute command: " + cmd)
 	bufRead := make([]byte, 10240)
 	_, err := terminal.Con.Write([]byte(cmd + "\n"))
@@ -234,12 +241,19 @@ func (terminal *Terminal) execute(cmd string) []byte {
 		terminal.Log.Fatalf("Write error: %s\n", err)
 	}
 	// Wait to catch the noisy output
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(1000 * time.Millisecond)
 	// Force to stop to read. Useful for windows reverse connection with ConPTY
-	terminal.Con.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
-	// Catch it to not hide it
-	terminal.Con.Read(bufRead)
-	terminal.Log.Debug("Output of the command: " + string(bufRead))
+	terminal.Con.SetReadDeadline(time.Now().Add(7000 * time.Millisecond))
+	// if the until byte slice is not null
+	if byteUntilRead[0] != 0 {
+		_, err = utils.ReadUntil(terminal.Con, bufRead, byteUntilRead)
+		if err != nil {
+			terminal.Log.Debug("Command '" + cmd + "' seems to take some time and we hit the timeout")
+		}
+	} else {
+		terminal.Con.Read(bufRead)
+	}
+	terminal.Log.Debug("Output of the command '" + cmd + "': " + string(bufRead))
 	// Send new line to show the prompt
 	terminal.Con.Write([]byte("\n"))
 
@@ -250,8 +264,18 @@ func (terminal *Terminal) execute(cmd string) []byte {
 
 func (terminal *Terminal) cleanCmd(cmd string) {
 	//Remove all the character which has been sent (for example if someone send upload xxxxx we don't want to execute this command on the remote terminal). All the bytes are sent when they are press on the keyboard (we need this for using tab and arrow up key)
-	terminal.execute(string(bytes.Repeat(utils.Backspace, len(cmd))))
-	terminal.execute(string(utils.Newline))
+	terminal.execute(string(bytes.Repeat(utils.Backspace, len(cmd))), []byte{0})
+	terminal.execute(string(utils.Newline), []byte{0})
+}
+
+func (terminal *Terminal) clearBufferReadTerminal() {
+	bufTemp := make([]byte, 10240)
+	terminal.Con.SetReadDeadline(time.Now().Add(5000 * time.Millisecond))
+	for {
+		if _, err := terminal.Con.Read(bufTemp); err != nil {
+			break
+		}
+	}
 }
 
 func (terminal *Terminal) sttyRawEcho(state string) {
@@ -276,7 +300,7 @@ func (terminal *Terminal) sttyRawEcho(state string) {
 
 func (terminal *Terminal) interactiveReverseShellLinux() {
 	//terminal.send_string_to_stream(terminal.spawnTTY)
-	terminal.execute(terminal.spawnTTY)
+	terminal.execute(terminal.spawnTTY, []byte{promptLinux1, promptLinux2})
 
 }
 

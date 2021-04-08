@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/op/go-logging"
 )
@@ -68,8 +69,11 @@ func (terminal *Terminal) New() error {
 
 // GetOS send the command whoami and parse the result. The windows format is COMPUTERNAME\username
 func (terminal *Terminal) GetOS() {
-	//Use env ou set command and parse outptut
-	output := terminal.execute("whoami")
+
+	// Wait a bit for the connection to be ready. Windows connection can take some time to be ready
+	time.Sleep(2000 * time.Millisecond)
+	//Use whoami command and parse outptut
+	output := terminal.execute("whoami", []byte{promptLinux1, promptLinux2, promptWindows1})
 	if strings.Contains(string(output), "\\") {
 		terminal.OS = "windows"
 	} else {
