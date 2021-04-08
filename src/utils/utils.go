@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"fmt"
-	"net"
+	"encoding/base64"
+
+	"golang.org/x/text/encoding/unicode"
 )
 
 // Backspace character
@@ -48,36 +49,12 @@ type Iface struct {
 	IP   string
 }
 
-// ListInterfaces returns a slice of struct iface (Name of interface with the IP) which are the interfaces on the system
-func ListInterfaces() []Iface {
-	interfaces := []Iface{}
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		fmt.Println(fmt.Errorf("localAddresses: %+v", err.Error()))
-		return nil
+func Utf16leBase64(s string) (string, error) {
+	var stringB64 = ""
+	utfEncoder := unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewEncoder()
+	ut16LeEncodedMessage, err := utfEncoder.String(s)
+	if err == nil {
+		stringB64 = base64.StdEncoding.EncodeToString([]byte(ut16LeEncodedMessage))
 	}
-	for _, i := range ifaces {
-		addrs, err := i.Addrs()
-		if err != nil {
-			fmt.Println(fmt.Errorf("localAddresses: %+v", err.Error()))
-			continue
-		}
-		for _, a := range addrs {
-
-			switch v := a.(type) {
-			case *net.IPNet:
-				// Test if it's ipv4
-				if v.IP.To4() != nil {
-					interfaces = append(interfaces, Iface{Name: i.Name, IP: v.IP.String()})
-				}
-
-			case *net.IPAddr:
-				// Test if it's ipv4
-				if v.IP.To4() != nil {
-					interfaces = append(interfaces, Iface{Name: i.Name, IP: v.IP.String()})
-				}
-			}
-		}
-	}
-	return interfaces
+	return stringB64, err
 }

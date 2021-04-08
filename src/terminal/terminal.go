@@ -137,6 +137,12 @@ func (terminal *Terminal) Connect() int {
 		// Set the terminal to raw mode
 		terminal.sttyRawEcho("enable")
 	}
+	// The terminal is natively in raw mode with go-prompt, we need to disable the raw mode when this is not necessary
+	// If the client is windows OS and we disable ConPTY, the raw mode is not needed
+	if terminal.OS == "windows" && terminal.Options.DisableConPTY {
+		terminal.sttyRawEcho("disable")
+	}
+
 	chanToStdout := terminal.streamCopy(terminal.Con, os.Stdout, false)
 	chanToRemote := terminal.streamCopy(os.Stdin, terminal.Con, true)
 

