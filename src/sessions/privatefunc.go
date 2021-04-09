@@ -46,6 +46,7 @@ func newTerminals() {
 		}
 		sessionID := lastSessionID + 1
 		sessions[sessionID] = term
+		term.Log.Info("Session " + strconv.Itoa(sessionID) + " (" + term.OS + ") available")
 		lastSessionID = sessionID
 	}
 }
