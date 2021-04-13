@@ -60,3 +60,4 @@ Flags:
 ### Linux
 ![Gif for linux victim](./images/girsh-linux.gif)
 ### Windows
+![PNG for windows victim](./images/girsh-windows.png)
