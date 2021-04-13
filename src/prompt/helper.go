@@ -15,6 +15,7 @@ func helpConnect() {
 func helpOptions() {
 	fmt.Println(`debug: enable/disable debug output
 port: update listener port
+raw: true (default) the terminal will be set to raw mode. Otherwise will stay in cooked mode
 conpty
 	disableconpty: In the case of conpty causing issue on your reverse shell you could disable it but your reverse shell will not be interactive
 	onlywebserver: if you have already a powershell commande execution you can use this option to serve the ConPty scripts and get your interactive reverse shell`)

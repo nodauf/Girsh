@@ -25,6 +25,7 @@ var optionsSubCommand = []prompt.Suggest{
 	{Text: "debug", Description: "Manage debug option"},
 	{Text: "port", Description: "Manage port listener option"},
 	{Text: "conpty", Description: "Manage conpty option"},
+	{Text: "raw", Description: "Manage the activation of raw terminal"},
 }
 
 var conptySubCommand = []prompt.Suggest{

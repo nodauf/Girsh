@@ -65,6 +65,12 @@ func executor(in string) {
 				} else {
 					sessions.PrintPortOptions()
 				}
+			case "raw":
+				if len(command) > 2 {
+					sessions.SetRaw(command[2])
+				} else {
+					sessions.PrintRawOptions()
+				}
 			case "conpty":
 				if len(command) > 2 {
 					third := command[2]

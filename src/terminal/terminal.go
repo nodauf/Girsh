@@ -30,6 +30,7 @@ type Options struct {
 	Debug         bool
 	DisableConPTY bool
 	OnlyWebserver bool
+	Raw           bool
 }
 
 // New will initialize the logging configuration and start the listener and wait for client.
@@ -139,7 +140,7 @@ func (terminal *Terminal) Connect() int {
 	}
 	// The terminal is natively in raw mode with go-prompt, we need to disable the raw mode when this is not necessary
 	// If the client is windows OS and we disable ConPTY, the raw mode is not needed
-	if terminal.OS == "windows" && terminal.Options.DisableConPTY {
+	if !terminal.Options.Raw || (terminal.OS == "windows" && terminal.Options.DisableConPTY) {
 		terminal.sttyRawEcho("disable")
 	}
 

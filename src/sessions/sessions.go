@@ -10,8 +10,8 @@ import (
 	logging "github.com/op/go-logging"
 )
 
-// OptionsSession contains the option of the futur terminal and the listener
-var OptionsSession terminal.Options
+// OptionsSession contains the option of the futur terminal and the listener. Default enable the terminal to be set in raw mode
+var OptionsSession = terminal.Options{Raw: true}
 
 // PrintSessions will list all active sessions
 func PrintSessions() {
@@ -89,6 +89,17 @@ func SetPort(portString string) {
 	}
 }
 
+// SetRaw update the option Raw
+func SetRaw(rawString string) {
+	if raw, err := strconv.ParseBool(rawString); err == nil {
+		OptionsSession.Raw = raw
+		PrintRawOptions()
+		Restart()
+	} else {
+		log.Error("Raw option " + rawString + " invalid")
+	}
+}
+
 // SetDisableConPTY update the option DisableConPTY
 func SetDisableConPTY(disableConPTYString string) {
 	if disableConPTY, err := strconv.ParseBool(disableConPTYString); err == nil {
@@ -125,6 +136,11 @@ func PrintPortOptions() {
 	fmt.Println("Port => " + strconv.Itoa(OptionsSession.Port))
 }
 
+// PrintRawOptions print the value of Raw options
+func PrintRawOptions() {
+	fmt.Println("Raw => " + strconv.FormatBool(OptionsSession.Raw))
+}
+
 // PrintDisableConPTYOptions print the value of DisableConPTY options
 func PrintDisableConPTYOptions() {
 	fmt.Println("DisableConPTY => " + strconv.FormatBool(OptionsSession.DisableConPTY))
@@ -139,6 +155,7 @@ func PrintOnlyWebserverOptions() {
 func PrintOptions() {
 	PrintDebugOptions()
 	PrintPortOptions()
+	PrintRawOptions()
 	PrintDisableConPTYOptions()
 	PrintOnlyWebserverOptions()
 }
