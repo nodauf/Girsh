@@ -100,6 +100,7 @@ func executor(in string) {
 			sessions.PrintOptions()
 		}
 	case "exit":
+		handleExit()
 		os.Exit(0)
 	// Not doing anything for just a new line
 	case "":
