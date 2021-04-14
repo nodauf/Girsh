@@ -143,21 +143,31 @@ func (terminal *Terminal) Connect() int {
 	if !terminal.Options.Raw || (terminal.OS == "windows" && terminal.Options.DisableConPTY) {
 		terminal.sttyRawEcho("disable")
 	}
+	var chanToStdout = make(chan int)
+	var chanToRemote = make(chan int)
+	var kill = make(chan bool)
 
-	chanToStdout := terminal.streamCopy(terminal.Con, os.Stdout, false)
-	chanToRemote := terminal.streamCopy(os.Stdin, terminal.Con, true)
+	terminal.streamCopy(terminal.Con, os.Stdout, false, chanToStdout, kill)
+	terminal.streamCopy(os.Stdin, terminal.Con, true, chanToRemote, kill)
 
 	select {
 	case status := <-chanToStdout:
 		if status == 0 {
 			terminal.Log.Debug("Remote connection is closed")
 		} else if status == 1 {
+			kill <- true
 			terminal.Log.Debug("Remote connection is backgrounded")
 		}
 		return status
 
 	case status := <-chanToRemote:
-		terminal.Log.Debug("Local program is terminated")
+		if status == 0 {
+			terminal.Log.Debug("Local program is terminated")
+
+		} else if status == 1 {
+			kill <- true
+			terminal.Log.Debug("Connection is backgrounded")
+		}
 		return status
 	}
 

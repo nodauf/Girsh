@@ -147,8 +147,7 @@ func (terminal *Terminal) getTerminalSize() {
 }
 
 // Performs copy operation between streams: os and tcp streams
-func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool) <-chan int {
-	syncChannel := make(chan int)
+func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool, out chan int, kill <-chan bool) {
 	var command string
 	go func() {
 		defer func() {
@@ -156,90 +155,96 @@ func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool
 				if command != "background" {
 					con.Close()
 					terminal.Log.Debugf("Connection from %v is closed\n", con.RemoteAddr())
-					syncChannel <- 0 // Notify that processing is finished
+					out <- 0 // Notify that processing is finished
 
 				} else {
-					syncChannel <- 1 // Notify that processing is backgrounded
+					out <- 1 // Notify that processing is backgrounded
 				}
 			}
 
 		}()
 		for {
-			var nBytes int
-			var err error
-			buf := make([]byte, 1024)
-			nBytes, err = src.Read(buf)
-			if err != nil {
-				if err != io.EOF {
-					terminal.Log.Criticalf("Read error: %s\n", err)
+			// Watch for kill signal
+			select {
+			case <-kill:
+				return
+			default:
 
-				}
-				break
-			}
-			//if writing stdin -> target
-			if toRemote {
-				// Remove null byte and line feed (\x10) which was send sometimes between each character
-				command += string(bytes.Trim(bytes.Trim(buf, string(utils.Nullbyte)), string(utils.Newline)))
-				//Contains new line
-				if utils.SliceByteContains(buf, byte(13)) {
-					terminal.mutex.Lock()
-					command = strings.TrimSpace(command)
-					terminal.Log.Debug("Command contains new line: " + command)
-					firstKeyWord := strings.Split(command, " ")[0]
-					commandSplit := strings.Split(command, " ")
-					switch firstKeyWord {
-					case "upload":
-						terminal.Log.Debug("Custom command upload")
-						//fmt.Println("upload")
-						terminal.Upload(command)
-						//skip the command
-						nBytes = 0
-
-					case "download":
-						terminal.Log.Debug("Custom command download")
-						terminal.Download(commandSplit[1])
-						//skip the command
-						nBytes = 0
-						dst.Write(bytes.Repeat(utils.Backspace, len(command)))
-
-					case "background":
-						terminal.Log.Debug("Custom command background")
-						//skip the command
-						terminal.mutex.Unlock()
-						nBytes = 0
-						dst.Write(bytes.Repeat(utils.Backspace, len(command)))
-						return
-
-					case "EXIT":
-						terminal.Log.Debug("Custom command EXIT")
-						terminal.mutex.Unlock()
-						return
+				var nBytes int
+				var err error
+				buf := make([]byte, 1024)
+				nBytes, err = src.Read(buf)
+				if err != nil {
+					if err != io.EOF {
+						terminal.Log.Criticalf("Read error: %s\n", err)
 
 					}
-					terminal.mutex.Unlock()
-					command = ""
+					break
 				}
-			}
+				//if writing stdin -> target
+				if toRemote {
+					// Remove null byte and line feed (\x10) which was send sometimes between each character
+					command += string(bytes.Trim(bytes.Trim(buf, string(utils.Nullbyte)), string(utils.Newline)))
+					//Contains new line
+					if utils.SliceByteContains(buf, byte(13)) {
+						terminal.mutex.Lock()
+						command = strings.TrimSpace(command)
+						terminal.Log.Debug("Command contains new line: " + command)
+						firstKeyWord := strings.Split(command, " ")[0]
+						commandSplit := strings.Split(command, " ")
+						switch firstKeyWord {
+						case "upload":
+							terminal.Log.Debug("Custom command upload")
+							//fmt.Println("upload")
+							terminal.Upload(command)
+							//skip the command
+							nBytes = 0
 
-			// If write target -> stdout
-			if !toRemote {
-				// Using mutex to avoid writing stdout of the target while we are typing
-				terminal.mutex.Lock()
-				_, err = dst.Write(buf[0:nBytes])
-				terminal.mutex.Unlock()
-			} else {
-				_, err = dst.Write(buf[0:nBytes])
-			}
-			if err != nil {
-				terminal.Log.Critical("Write error: %s\n", err)
-				return
+						case "download":
+							terminal.Log.Debug("Custom command download")
+							terminal.Download(commandSplit[1])
+							//skip the command
+							nBytes = 0
+							dst.Write(bytes.Repeat(utils.Backspace, len(command)))
+
+						case "background":
+							terminal.Log.Debug("Custom command background")
+							//skip the command
+							terminal.mutex.Unlock()
+							nBytes = 0
+							dst.Write(bytes.Repeat(utils.Backspace, len(command)))
+							return
+
+						case "EXIT":
+							terminal.Log.Debug("Custom command EXIT")
+							terminal.mutex.Unlock()
+							return
+
+						}
+						terminal.mutex.Unlock()
+						command = ""
+					}
+				}
+
+				// If write target -> stdout
+				if !toRemote {
+					// Using mutex to avoid writing stdout of the target while we are typing
+					terminal.mutex.Lock()
+					_, err = dst.Write(buf[0:nBytes])
+					terminal.mutex.Unlock()
+				} else {
+					_, err = dst.Write(buf[0:nBytes])
+				}
+				if err != nil {
+					terminal.Log.Critical("Write error: %s\n", err)
+					return
+
+				}
 
 			}
-
 		}
 
 	}()
-	return syncChannel
 }
 
 func (terminal *Terminal) execute(cmd string, byteUntilRead []byte) []byte {
