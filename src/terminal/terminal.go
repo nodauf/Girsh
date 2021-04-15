@@ -152,20 +152,20 @@ func (terminal *Terminal) Connect() int {
 
 	select {
 	case status := <-chanToStdout:
+		kill <- true
 		if status == 0 {
 			terminal.Log.Debug("Remote connection is closed")
 		} else if status == 1 {
-			kill <- true
 			terminal.Log.Debug("Remote connection is backgrounded")
 		}
 		return status
 
 	case status := <-chanToRemote:
+		kill <- true
 		if status == 0 {
 			terminal.Log.Debug("Local program is terminated")
 
 		} else if status == 1 {
-			kill <- true
 			terminal.Log.Debug("Connection is backgrounded")
 		}
 		return status
