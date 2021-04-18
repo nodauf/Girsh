@@ -13,8 +13,20 @@ For a Linux:
 - Change the terminal as raw
 
 For a Windows:
-- Dowload [ConPTY](https://github.com/antonioCoco/ConPtyShell) on the same machine and same port as the reverse shell server
+- Bypass AMSI and use [ConPTY](https://github.com/antonioCoco/ConPtyShell) to spawn an interactive terminal
 - Listen for getting the ConPTY reverse shell
+
+## Custom command
+```
+sessions: Manage route to socks servers
+connect: Manage route to socks servers
+menu: Start the reverse shell menu
+options: Manage current options (default print them)
+start: Start the listener
+stop: Stop the listener
+restart: Restart the listener
+help: help command
+```
 
 ## Usage
 
