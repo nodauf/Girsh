@@ -12,7 +12,7 @@ import (
 )
 
 // OptionsSession contains the option of the futur terminal and the listener. Default enable the terminal to be set in raw mode
-var OptionsSession = terminal.Options{Raw: true}
+var OptionsSession = terminal.Options{Raw: true, TimerBuffer: 2000}
 
 // PrintSessions will list all active sessions
 func PrintSessions() {
@@ -101,6 +101,17 @@ func SetRaw(rawString string) {
 	}
 }
 
+// SetTimerBuffer update the option Port
+func SetTimerBuffer(timerString string) {
+	if timer, err := strconv.Atoi(timerString); err == nil {
+		OptionsSession.TimerBuffer = timer
+		PrintTimerBufferOptions()
+		Restart()
+	} else {
+		log.Error("TimerBuffer option " + timerString + " invalid")
+	}
+}
+
 // SetDisableConPTY update the option DisableConPTY
 func SetDisableConPTY(disableConPTYString string) {
 	if disableConPTY, err := strconv.ParseBool(disableConPTYString); err == nil {
@@ -145,6 +156,11 @@ func PrintRawOptions() {
 	fmt.Println("Raw => " + strconv.FormatBool(OptionsSession.Raw))
 }
 
+// PrintTimerBufferOptions print the value of Raw options
+func PrintTimerBufferOptions() {
+	fmt.Println("TimerBuffer => " + strconv.Itoa(OptionsSession.TimerBuffer))
+}
+
 // PrintDisableConPTYOptions print the value of DisableConPTY options
 func PrintDisableConPTYOptions() {
 	fmt.Println("DisableConPTY => " + strconv.FormatBool(OptionsSession.DisableConPTY))
@@ -160,6 +176,7 @@ func PrintOptions() {
 	PrintDebugOptions()
 	PrintPortOptions()
 	PrintRawOptions()
+	PrintTimerBufferOptions()
 	PrintDisableConPTYOptions()
 	PrintOnlyWebserverOptions()
 }

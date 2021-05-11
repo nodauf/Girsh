@@ -26,6 +26,7 @@ var optionsSubCommand = []prompt.Suggest{
 	{Text: "port", Description: "Manage port listener option"},
 	{Text: "conpty", Description: "Manage conpty option"},
 	{Text: "raw", Description: "Manage the activation of raw terminal"},
+	{Text: "timerBuffer", Description: "Time to wait to clear terminal's buffer when executing command (in ms)"},
 }
 
 var conptySubCommand = []prompt.Suggest{

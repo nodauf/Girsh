@@ -31,6 +31,7 @@ type Options struct {
 	DisableConPTY bool
 	OnlyWebserver bool
 	Raw           bool
+	TimerBuffer   int
 }
 
 // New will initialize the logging configuration and start the listener and wait for client.

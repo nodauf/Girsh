@@ -92,6 +92,12 @@ func executor(in string) {
 
 					}
 				}
+			case "timerbuffer":
+				if len(command) > 2 {
+					sessions.SetTimerBuffer(command[2])
+				} else {
+					sessions.PrintTimerBufferOptions()
+				}
 			default:
 				fmt.Println("Invalid options command")
 

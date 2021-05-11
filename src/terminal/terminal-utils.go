@@ -285,7 +285,8 @@ func (terminal *Terminal) cleanCmd(cmd string) {
 
 func (terminal *Terminal) clearBufferReadTerminal() {
 	bufTemp := make([]byte, 10240)
-	terminal.Con.SetReadDeadline(time.Now().Add(5000 * time.Millisecond))
+	timeToWait := time.Duration(terminal.Options.TimerBuffer) * time.Millisecond
+	terminal.Con.SetReadDeadline(time.Now().Add(timeToWait))
 	for {
 		if _, err := terminal.Con.Read(bufTemp); err != nil {
 			break
