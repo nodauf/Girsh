@@ -8,6 +8,6 @@ require (
 	github.com/manifoldco/promptui v0.8.0
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/spf13/cobra v1.1.3
-	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023
+	golang.org/x/net v0.0.0-20210521195947-fe42d452be8f
 	golang.org/x/text v0.3.6
 )
