@@ -9,5 +9,5 @@ require (
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/spf13/cobra v1.2.1
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
-	golang.org/x/text v0.3.6
+	golang.org/x/text v0.3.7
 )
