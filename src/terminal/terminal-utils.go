@@ -183,6 +183,15 @@ func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool
 				}
 				//if writing stdin -> target
 				if toRemote {
+					// Switch to parse special character
+					switch buf[0] {
+					// backspace
+					case byte(127):
+						// Remove the last character
+						command = command[:len(command)-1]
+						_, err = dst.Write(buf[0:nBytes])
+						continue
+					}
 					// Remove null byte and line feed (\x10) which was send sometimes between each character
 					command += string(bytes.Trim(bytes.Trim(buf, string(utils.Nullbyte)), string(utils.Newline)))
 					//Contains new line
