@@ -188,7 +188,11 @@ func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool
 					// backspace
 					case byte(127):
 						// Remove the last character
-						command = command[:len(command)-1]
+						if len(command) > 1 {
+							command = command[:len(command)-1]
+						} else {
+							command = ""
+						}
 						_, err = dst.Write(buf[0:nBytes])
 						continue
 					}
