@@ -176,7 +176,7 @@ func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool
 				nBytes, err = src.Read(buf)
 				if err != nil {
 					if err != io.EOF {
-						terminal.Log.Criticalf("Read error: %s\n", err)
+						terminal.Log.Error("Read error: %s\n", err)
 
 					}
 					break
@@ -249,7 +249,7 @@ func (terminal *Terminal) streamCopy(src io.Reader, dst io.Writer, toRemote bool
 					_, err = dst.Write(buf[0:nBytes])
 				}
 				if err != nil {
-					terminal.Log.Critical("Write error: %s\n", err)
+					terminal.Log.Error("Write error: %s\n", err)
 					return
 
 				}
