@@ -5,7 +5,6 @@ builds:
       - windows
     goarch:
       - amd64
-      - arm64
 archives:
   -
     format_overrides:
