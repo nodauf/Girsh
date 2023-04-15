@@ -97,7 +97,7 @@ func (terminal *Terminal) PrepareShell() error {
 
 	} else if terminal.OS == "windows" {
 
-		if !terminal.Options.DisableConPTY {
+		if runtime.GOOS == "linux" && !terminal.Options.DisableConPTY {
 			terminal.interactiveReverseShellWindows()
 			terminal.Log.Debug("Starting http server on " + terminal.Con.LocalAddr().String())
 			err := terminal.serveHTTPRevShellPowershell()
